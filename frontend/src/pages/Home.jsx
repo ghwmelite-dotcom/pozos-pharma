@@ -144,16 +144,22 @@ export default function Home() {
       <section className="kente-pattern-bg rounded-xl py-8 px-6">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl mx-auto text-center">
           <div>
-            <p className="text-3xl font-extrabold text-brand-indigo dark:text-indigo-400">
-              500+
-            </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Active Users</p>
+            <div className="flex items-center justify-center gap-2">
+              <svg className="w-7 h-7 text-brand-indigo dark:text-indigo-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
+              </svg>
+            </div>
+            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mt-1">Open Community</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Join free, ask anything</p>
           </div>
           <div>
-            <p className="text-3xl font-extrabold text-brand-emerald dark:text-emerald-400">
-              25+
-            </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Verified Pharmacists</p>
+            <div className="flex items-center justify-center gap-2">
+              <svg className="w-7 h-7 text-brand-emerald dark:text-emerald-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mt-1">Verified Pharmacists</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">PSGH-registered professionals</p>
           </div>
           <div>
             <div className="flex items-center justify-center gap-2">
@@ -164,7 +170,8 @@ export default function Home() {
                 <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
               </svg>
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Powered by Cloudflare AI</p>
+            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mt-1">Powered by Cloudflare AI</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Instant pharmaceutical guidance</p>
           </div>
         </div>
       </section>

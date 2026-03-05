@@ -16,11 +16,11 @@ binding = "AI"
 [[d1_databases]]
 binding = "DB"
 database_name = "pozospharma-db"
-database_id = "FILL_AFTER_CREATE"
+database_id = "e4793a0f-2a3e-4794-b15c-a94e15c9f3db"
 
 [[kv_namespaces]]
 binding = "KV"
-id = "FILL_AFTER_CREATE"
+id = "6236bff659aa456d8c83aff4eb0aac7b"
 
 [[r2_buckets]]
 binding = "R2"

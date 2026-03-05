@@ -1,0 +1,35 @@
+name = "pozospharma-worker"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+ENVIRONMENT = "production"
+APP_NAME = "PozosPharma"
+AI_PRIMARY_MODEL = "@cf/meta/llama-3.1-8b-instruct"
+AI_FALLBACK_MODEL = "@cf/mistral/mistral-7b-instruct-v0.1"
+CORS_ORIGIN = "https://pozospharma.pages.dev"
+
+[ai]
+binding = "AI"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "pozospharma-db"
+database_id = "FILL_AFTER_CREATE"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "FILL_AFTER_CREATE"
+
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "pozospharma-docs"
+
+[[durable_objects.bindings]]
+name = "CHAT_ROOM"
+class_name = "ChatRoom"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["ChatRoom"]

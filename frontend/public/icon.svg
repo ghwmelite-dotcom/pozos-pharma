@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Dark luxury background -->
+    <linearGradient id="bg" x1="0" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#1A1520"/>
+      <stop offset="100%" stop-color="#0D0B12"/>
+    </linearGradient>
+
+    <!-- Gold shimmer -->
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#A8893A"/>
+      <stop offset="35%" stop-color="#C9A84C"/>
+      <stop offset="65%" stop-color="#E8D48B"/>
+      <stop offset="100%" stop-color="#C9A84C"/>
+    </linearGradient>
+
+    <!-- Subtle gold for ring -->
+    <linearGradient id="goldFaint" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#C9A84C" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#E8D48B" stop-opacity="0.08"/>
+    </linearGradient>
+
+    <!-- Ghana flag stripe -->
+    <linearGradient id="ghana" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#CE1126"/>
+      <stop offset="33.33%" stop-color="#CE1126"/>
+      <stop offset="33.33%" stop-color="#FCD116"/>
+      <stop offset="66.66%" stop-color="#FCD116"/>
+      <stop offset="66.66%" stop-color="#006B3F"/>
+      <stop offset="100%" stop-color="#006B3F"/>
+    </linearGradient>
+
+    <!-- Glow filter -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Kente weave pattern -->
+    <pattern id="kente" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="0" x2="24" y2="24" stroke="#C9A84C" stroke-width="0.5" opacity="0.06"/>
+      <line x1="24" y1="0" x2="0" y2="24" stroke="#C9A84C" stroke-width="0.5" opacity="0.06"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="108" ry="108" fill="url(#bg)"/>
+
+  <!-- Kente texture overlay -->
+  <rect width="512" height="512" rx="108" ry="108" fill="url(#kente)"/>
+
+  <!-- Outer gold ring — Gye Nyame orbit -->
+  <circle cx="256" cy="236" r="155" fill="none" stroke="url(#goldFaint)" stroke-width="2"/>
+
+  <!-- Inner ring -->
+  <circle cx="256" cy="236" r="120" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.12"/>
+
+  <!-- Gold glow behind cross -->
+  <circle cx="256" cy="236" r="72" fill="#C9A84C" opacity="0.06" filter="url(#glow)"/>
+
+  <!-- Medical cross — Adinkra geometric style -->
+  <g transform="translate(256, 236)" fill="url(#gold)" filter="url(#glow)">
+    <!-- Vertical bar -->
+    <rect x="-18" y="-58" width="36" height="116" rx="8"/>
+    <!-- Horizontal bar -->
+    <rect x="-58" y="-18" width="116" height="36" rx="8"/>
+  </g>
+
+  <!-- Four diamond accents at cross tips — Adinkra geometry -->
+  <g fill="#C9A84C" opacity="0.4">
+    <path d="M256 152 l8 -12 l8 12 l-8 12z"/>  <!-- top -->
+    <path d="M256 320 l8 -12 l8 12 l-8 12z"/>  <!-- bottom -->
+    <path d="M172 236 l12 -8 l-12 -8 l-12 8z"/> <!-- left -->
+    <path d="M340 236 l12 -8 l-12 -8 l-12 8z"/> <!-- right -->
+  </g>
+
+  <!-- Corner Adinkra dots — like Gye Nyame punctuation -->
+  <g fill="#C9A84C" opacity="0.25">
+    <circle cx="148" cy="148" r="4"/>
+    <circle cx="364" cy="148" r="4"/>
+    <circle cx="148" cy="324" r="4"/>
+    <circle cx="364" cy="324" r="4"/>
+  </g>
+
+  <!-- Ghana flag stripe -->
+  <rect x="106" y="388" width="300" height="8" rx="4" fill="url(#ghana)" opacity="0.85"/>
+
+  <!-- "PP" monogram -->
+  <text x="256" y="448" font-family="'Georgia', 'Times New Roman', serif" font-size="52" font-weight="700" fill="#C9A84C" text-anchor="middle" letter-spacing="6" opacity="0.7">PP</text>
+</svg>

@@ -8,6 +8,7 @@ ENVIRONMENT = "production"
 APP_NAME = "PozosPharma"
 AI_PRIMARY_MODEL = "@cf/meta/llama-3.1-8b-instruct"
 AI_FALLBACK_MODEL = "@cf/mistral/mistral-7b-instruct-v0.1"
+AI_COMPLEX_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
 CORS_ORIGIN = "https://pozospharma.pages.dev"
 
 [ai]

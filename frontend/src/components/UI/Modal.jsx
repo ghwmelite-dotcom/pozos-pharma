@@ -87,9 +87,9 @@ export default function Modal({
         tabIndex={-1}
         className={`
           relative w-full ${sizeClasses[size] || sizeClasses.md}
-          bg-white dark:bg-surface-card-dark
+          bg-warm-50 dark:bg-surface-card-dark
           rounded-2xl shadow-2xl
-          border border-gray-200 dark:border-gray-700
+          border border-warm-200/60 dark:border-gray-700
           animate-[scaleIn_200ms_ease-out]
           focus:outline-none
         `}
@@ -113,7 +113,7 @@ export default function Modal({
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-500 dark:hover:text-gray-300 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-indigo"
+          className="absolute top-4 right-4 p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-warm-200/60 dark:text-gray-500 dark:hover:text-gray-300 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-indigo"
           aria-label="Close modal"
         >
           <svg

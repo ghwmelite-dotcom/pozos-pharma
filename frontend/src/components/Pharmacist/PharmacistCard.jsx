@@ -93,7 +93,7 @@ export default function PharmacistCard({ pharmacist, onConnect }) {
   };
 
   return (
-    <div className="relative bg-white dark:bg-surface-card-dark rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow p-5">
+    <div className="relative bg-warm-50 dark:bg-surface-card-dark rounded-xl border border-warm-200/60 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow p-5">
       {/* Online status dot */}
       <div className="absolute top-4 right-4">
         {is_online ? (
@@ -163,7 +163,7 @@ export default function PharmacistCard({ pharmacist, onConnect }) {
       )}
 
       {/* Stats + Connect */}
-      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100 dark:border-gray-700">
+      <div className="flex items-center justify-between mt-4 pt-3 border-t border-warm-200 dark:border-gray-700">
         <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
           <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
             <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" />

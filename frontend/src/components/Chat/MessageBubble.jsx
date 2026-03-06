@@ -36,6 +36,8 @@ export default function MessageBubble({ message }) {
     drugRefs,
     rating,
     countryFlag,
+    status,
+    onRetry,
   } = message;
 
   const parsedContent = parseMessageContent(content);
@@ -51,6 +53,8 @@ export default function MessageBubble({ message }) {
         relativeTime={relativeTime}
         isEmergency={isEmergency}
         drugRefs={drugRefs}
+        status={status}
+        onRetry={onRetry}
       />
     );
   }
@@ -90,7 +94,7 @@ export default function MessageBubble({ message }) {
   // System / fallback
   return (
     <div className="flex justify-center my-2" aria-label="System message">
-      <span className="text-xs text-gray-400 dark:text-gray-500 italic px-3 py-1 bg-gray-50 dark:bg-gray-800/50 rounded-full">
+      <span className="text-xs text-gray-400 dark:text-gray-500 italic px-3 py-1 bg-warm-100 dark:bg-gray-800/50 rounded-full">
         {content}
       </span>
     </div>
@@ -99,7 +103,7 @@ export default function MessageBubble({ message }) {
 
 /* ── User Bubble (right-aligned) ───────────────────────────────── */
 
-function UserBubble({ id, sender, content, relativeTime, isEmergency }) {
+function UserBubble({ id, sender, content, relativeTime, isEmergency, status, onRetry }) {
   return (
     <div
       className="flex justify-end mb-3 px-2"
@@ -127,7 +131,7 @@ function UserBubble({ id, sender, content, relativeTime, isEmergency }) {
         >
           {isEmergency && <EmergencyPulse />}
           <div
-            className="text-sm leading-relaxed [&_code.drug-highlight]:font-mono [&_code.drug-highlight]:bg-white/20 [&_code.drug-highlight]:px-1 [&_code.drug-highlight]:rounded [&_code.drug-highlight]:text-indigo-100"
+            className="text-sm leading-relaxed [&_code.drug-highlight]:font-mono [&_code.drug-highlight]:bg-warm-50/20 [&_code.drug-highlight]:px-1 [&_code.drug-highlight]:rounded [&_code.drug-highlight]:text-indigo-100"
             dangerouslySetInnerHTML={{ __html: content }}
           />
 
@@ -140,6 +144,21 @@ function UserBubble({ id, sender, content, relativeTime, isEmergency }) {
             aria-hidden="true"
           />
         </div>
+
+        {status === 'failed' && (
+          <div className="flex items-center justify-end gap-2 mt-1">
+            <span className="text-[11px] text-red-500">Failed to send</span>
+            {onRetry && (
+              <button
+                type="button"
+                onClick={onRetry}
+                className="text-[11px] font-medium text-brand-indigo hover:underline"
+              >
+                Retry
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -169,8 +188,8 @@ function AIBubble({ id, sender, content, relativeTime, model, isEmergency }) {
         <div
           className={`
             relative px-4 py-2.5 rounded-2xl rounded-bl-md
-            bg-white dark:bg-surface-card-dark
-            border border-gray-200 dark:border-gray-700
+            bg-warm-50 dark:bg-surface-card-dark
+            border border-warm-200/60 dark:border-gray-700
             shadow-sm
             bg-kente-pattern
             ${isEmergency ? "ring-2 ring-red-500 ring-offset-2 dark:ring-offset-surface-dark" : ""}
@@ -192,7 +211,7 @@ function AIBubble({ id, sender, content, relativeTime, model, isEmergency }) {
 
           {/* Tail */}
           <div
-            className="absolute bottom-0 left-[-6px] w-3 h-3 bg-white dark:bg-surface-card-dark border-l border-b border-gray-200 dark:border-gray-700"
+            className="absolute bottom-0 left-[-6px] w-3 h-3 bg-warm-50 dark:bg-surface-card-dark border-l border-b border-warm-200/60 dark:border-gray-700"
             style={{
               clipPath: "polygon(100% 0, 0% 100%, 100% 100%)",
             }}

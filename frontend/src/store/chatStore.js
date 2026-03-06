@@ -18,6 +18,7 @@ const useChatStore = create(
       rooms: [],
       typingUsers: {},
       isConnected: false,
+      connectionStatus: 'disconnected', // 'connected' | 'connecting' | 'disconnected'
       handoffStatus: null, // null | "requested" | "accepted" | "active" | "completed"
 
       // ── Auth State ──────────────────────────────────────────
@@ -25,13 +26,21 @@ const useChatStore = create(
       token: null,
 
       // ── UI State ────────────────────────────────────────────
-      darkMode: false,
+      darkMode: true,
+      language: 'en',
 
       // ── Message Actions ─────────────────────────────────────
       addMessage: (message) =>
-        set((state) => ({
-          messages: [...state.messages, { ...message, id: message.id || crypto.randomUUID() }],
-        })),
+        set((state) => {
+          const msgId = message.id || crypto.randomUUID();
+          // Dedup: skip if message with this ID already exists
+          if (state.messages.some((m) => m.id === msgId)) {
+            return state;
+          }
+          return {
+            messages: [...state.messages, { ...message, id: msgId }],
+          };
+        }),
 
       clearMessages: () => set({ messages: [] }),
 
@@ -118,7 +127,7 @@ const useChatStore = create(
 
       // ── Send Message (API call + optimistic update) ─────────
       sendMessage: async (roomSlug, content) => {
-        const { token, user, currentSession } = get();
+        const { token, user, currentSession, language } = get();
 
         // Optimistic update
         const optimisticMsg = {
@@ -142,7 +151,7 @@ const useChatStore = create(
               "Content-Type": "application/json",
               ...(token ? { Authorization: `Bearer ${token}` } : {}),
             },
-            body: JSON.stringify({ content, sessionId: currentSession, roomId: roomSlug }),
+            body: JSON.stringify({ content, sessionId: currentSession, roomId: roomSlug, language }),
           });
 
           if (!res.ok) throw new Error("Failed to send message");
@@ -189,6 +198,63 @@ const useChatStore = create(
         }
       },
 
+      // ── Retry Failed Message ────────────────────────────────
+      retryMessage: async (messageId, roomSlug) => {
+        const { messages, token, user, currentSession, language } = get();
+        const msg = messages.find((m) => m.id === messageId && m.status === 'failed');
+        if (!msg) return;
+
+        // Mark as sending
+        set((state) => ({
+          messages: state.messages.map((m) =>
+            m.id === messageId ? { ...m, status: 'sending' } : m
+          ),
+        }));
+
+        try {
+          const res = await fetch(`${API_URL}/api/chat/message`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({ content: msg.content, sessionId: currentSession, roomId: roomSlug, language }),
+          });
+
+          if (!res.ok) throw new Error('Failed to send message');
+
+          const data = await res.json();
+
+          set((state) => {
+            const updated = state.messages.map((m) =>
+              m.id === messageId ? { ...m, status: 'sent' } : m
+            );
+            if (data.aiMessage) {
+              updated.push({
+                id: data.aiMessage.id,
+                content: data.aiMessage.content,
+                sender: 'PozosBot',
+                sender_type: 'ai',
+                model: data.aiMessage.model,
+                isEmergency: data.aiMessage.isEmergency,
+                created_at: new Date().toISOString(),
+              });
+            }
+            return {
+              messages: updated,
+              currentSession: data.sessionId || state.currentSession,
+              handoffStatus: data.requiresHandoff ? 'requested' : state.handoffStatus,
+            };
+          });
+        } catch {
+          set((state) => ({
+            messages: state.messages.map((m) =>
+              m.id === messageId ? { ...m, status: 'failed' } : m
+            ),
+          }));
+        }
+      },
+
       // ── Handoff Actions ─────────────────────────────────────
       requestHandoff: async () => {
         const { token, currentSession } = get();
@@ -216,7 +282,12 @@ const useChatStore = create(
       setHandoffStatus: (status) => set({ handoffStatus: status }),
 
       // ── WebSocket State ─────────────────────────────────────
-      setIsConnected: (connected) => set({ isConnected: connected }),
+      setIsConnected: (connected) => set({
+        isConnected: connected,
+        connectionStatus: connected ? 'connected' : 'disconnected',
+      }),
+
+      setConnectionStatus: (status) => set({ connectionStatus: status }),
 
       setTypingUsers: (typingUsers) => set({ typingUsers }),
 
@@ -240,6 +311,9 @@ const useChatStore = create(
           },
         })),
 
+      // ── Language ─────────────────────────────────────────────
+      setLanguage: (lang) => set({ language: lang }),
+
       // ── Dark Mode ───────────────────────────────────────────
       toggleDarkMode: () =>
         set((state) => {
@@ -259,6 +333,7 @@ const useChatStore = create(
         user: state.user,
         token: state.token,
         darkMode: state.darkMode,
+        language: state.language,
       }),
     }
   )

@@ -16,6 +16,13 @@ export async function handleChat(request, env, path) {
   if (path === '/api/chat/session' && request.method === 'POST') {
     return createSession(request, env);
   }
+
+  // GET /api/chat/:roomSlug/messages
+  const msgMatch = path.match(/^\/api\/chat\/([^/]+)\/messages$/);
+  if (msgMatch && request.method === 'GET') {
+    return getRoomMessages(request, env, msgMatch[1]);
+  }
+
   return null;
 }
 
@@ -29,7 +36,7 @@ async function sendMessage(request, env) {
     return json({ error: limit.message, retryAfter: limit.retryAfter }, 429);
   }
 
-  const { content, sessionId, roomId } = await request.json();
+  const { content, sessionId, roomId, language } = await request.json();
   if (!content || !content.trim()) {
     return json({ error: 'Message content is required' }, 400);
   }
@@ -51,9 +58,49 @@ async function sendMessage(request, env) {
       'INSERT INTO handoff_queue (id, session_id, user_id, urgency, reason, ai_summary) VALUES (?, ?, ?, ?, ?, ?)'
     ).bind(crypto.randomUUID(), sessionId, user.userId, 'emergency', 'safety_filter', 'User message triggered safety filter - immediate pharmacist review needed').run();
 
+    // Broadcast safety-filter response via Durable Object
+    const safetyAiMsgId = crypto.randomUUID();
+    try {
+      const roomSlug = roomId || 'general';
+      const doId = env.CHAT_ROOM.idFromName(roomSlug);
+      const doStub = env.CHAT_ROOM.get(doId);
+
+      const broadcastMessages = [
+        {
+          type: 'message',
+          id: msgId,
+          content,
+          sender: user.username,
+          senderId: user.userId,
+          senderType: 'user',
+          created_at: new Date().toISOString()
+        },
+        {
+          type: 'message',
+          id: safetyAiMsgId,
+          content: safety.response,
+          sender: 'PozosBot',
+          senderId: 'pozosbot',
+          senderType: 'ai',
+          model: 'safety-filter',
+          isEmergency: true,
+          created_at: new Date().toISOString()
+        }
+      ];
+
+      await doStub.fetch(new Request('https://internal/broadcast', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(broadcastMessages)
+      }));
+    } catch (err) {
+      console.error('DO broadcast failed (safety):', err);
+      // Non-fatal — message is already saved to DB
+    }
+
     return json({
       aiMessage: {
-        id: crypto.randomUUID(),
+        id: safetyAiMsgId,
         content: safety.response,
         senderType: 'ai',
         model: 'safety-filter',
@@ -98,7 +145,7 @@ async function sendMessage(request, env) {
   const sessionHistory = (history.results || []).reverse();
 
   // Call PozosBot AI
-  const aiResponse = await getPozosResponse(content, sessionHistory, env);
+  const aiResponse = await getPozosResponse(content, sessionHistory, env, { language: language || 'en' });
 
   // Save AI response
   const aiMsgId = crypto.randomUUID();
@@ -128,6 +175,48 @@ async function sendMessage(request, env) {
       urgency: aiResponse.isEmergency ? 'emergency' : 'normal',
       timestamp: Date.now()
     }), { expirationTtl: 3600 });
+  }
+
+  // Broadcast via Durable Object for real-time delivery
+  try {
+    const roomSlug = roomId || 'general';
+    const doId = env.CHAT_ROOM.idFromName(roomSlug);
+    const doStub = env.CHAT_ROOM.get(doId);
+
+    const broadcastMessages = [
+      {
+        type: 'message',
+        id: userMsgId,
+        content,
+        sender: user.username,
+        senderId: user.userId,
+        senderType: 'user',
+        created_at: new Date().toISOString()
+      }
+    ];
+
+    if (aiResponse) {
+      broadcastMessages.push({
+        type: 'message',
+        id: aiMsgId,
+        content: aiResponse.content,
+        sender: 'PozosBot',
+        senderId: 'pozosbot',
+        senderType: 'ai',
+        model: aiResponse.model,
+        isEmergency: aiResponse.isEmergency,
+        created_at: new Date().toISOString()
+      });
+    }
+
+    await doStub.fetch(new Request('https://internal/broadcast', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(broadcastMessages)
+    }));
+  } catch (err) {
+    console.error('DO broadcast failed:', err);
+    // Non-fatal — message is already saved to DB
   }
 
   return json({
@@ -163,7 +252,47 @@ async function getHistory(request, env) {
 
 async function getRooms(request, env) {
   const rooms = await env.DB.prepare('SELECT * FROM rooms ORDER BY id').all();
-  return json({ rooms: rooms.results || [] });
+  const roomList = rooms.results || [];
+
+  // Enrich with live user counts from KV
+  const enriched = await Promise.all(
+    roomList.map(async (room) => {
+      try {
+        const count = await env.KV.get(`room:${room.slug}:users`);
+        return { ...room, active_count: count ? parseInt(count, 10) : 0 };
+      } catch {
+        return { ...room, active_count: 0 };
+      }
+    })
+  );
+
+  return json({ rooms: enriched });
+}
+
+async function getRoomMessages(request, env, roomSlug) {
+  const user = await authMiddleware(request, env);
+  if (!user) return json({ error: 'Unauthorized' }, 401);
+
+  const url = new URL(request.url);
+  const limit = parseInt(url.searchParams.get('limit') || '50');
+  const offset = parseInt(url.searchParams.get('offset') || '0');
+
+  // Verify room exists
+  const room = await env.DB.prepare('SELECT * FROM rooms WHERE slug = ?').bind(roomSlug).first();
+  if (!room) {
+    return json({ error: 'Room not found' }, 404);
+  }
+
+  // Get messages from sessions in this room
+  const messages = await env.DB.prepare(
+    `SELECT m.* FROM messages m
+     JOIN sessions s ON m.session_id = s.id
+     WHERE s.room_id = ?
+     ORDER BY m.created_at ASC
+     LIMIT ? OFFSET ?`
+  ).bind(roomSlug, limit, offset).all();
+
+  return json({ messages: messages.results || [] });
 }
 
 async function createSession(request, env) {

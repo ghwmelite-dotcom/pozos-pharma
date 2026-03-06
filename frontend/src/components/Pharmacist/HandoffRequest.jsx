@@ -66,7 +66,7 @@ export default function HandoffRequest({ sessionId, aiSummary, onSubmit, onCance
   };
 
   return (
-    <div className="bg-white dark:bg-surface-card-dark rounded-xl border border-gray-200 dark:border-gray-700 shadow-lg p-5 max-w-lg mx-auto">
+    <div className="bg-warm-50 dark:bg-surface-card-dark rounded-xl border border-warm-200/60 dark:border-gray-700 shadow-lg p-5 max-w-lg mx-auto">
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Header */}
         <div className="flex items-center gap-3">
@@ -161,7 +161,7 @@ export default function HandoffRequest({ sessionId, aiSummary, onSubmit, onCance
             placeholder="Describe why you'd like to speak with a pharmacist..."
             rows={3}
             required
-            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-emerald focus:border-transparent transition-shadow resize-none"
+            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-warm-100 dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-emerald focus:border-transparent transition-shadow resize-none"
           />
           <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
             This information will be shared with the pharmacist to provide better help.

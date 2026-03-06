@@ -2,6 +2,7 @@ import { useState } from "react";
 import useAuth from "../../hooks/useAuth";
 import Modal from "../UI/Modal";
 import Button from "../UI/Button";
+import { useTranslation } from "../../i18n/useTranslation";
 
 /**
  * PozosPharma Login Modal
@@ -13,9 +14,11 @@ import Button from "../UI/Button";
  * @param {boolean} props.isOpen
  * @param {() => void} props.onClose
  * @param {() => void} props.onSwitchToRegister
+ * @param {() => void} [props.onForgotPassword]
  */
-export default function LoginModal({ isOpen, onClose, onSwitchToRegister }) {
+export default function LoginModal({ isOpen, onClose, onSwitchToRegister, onForgotPassword }) {
   const { login } = useAuth();
+  const { t } = useTranslation();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -51,6 +54,13 @@ export default function LoginModal({ isOpen, onClose, onSwitchToRegister }) {
     onSwitchToRegister();
   };
 
+  const handleForgotPassword = () => {
+    setError("");
+    setEmail("");
+    setPassword("");
+    if (onForgotPassword) onForgotPassword();
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="sm">
       <form onSubmit={handleSubmit} className="space-y-5">
@@ -74,10 +84,10 @@ export default function LoginModal({ isOpen, onClose, onSwitchToRegister }) {
             </svg>
           </div>
           <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-            Akwaaba! Welcome Back
+            {t("auth.loginTitle")}
           </h2>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Sign in to your PozosPharma account
+            {t("auth.loginSubtitle")}
           </p>
         </div>
 
@@ -116,7 +126,7 @@ export default function LoginModal({ isOpen, onClose, onSwitchToRegister }) {
             htmlFor="login-email"
             className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
           >
-            Email Address
+            {t("auth.email")}
           </label>
           <input
             id="login-email"
@@ -126,7 +136,7 @@ export default function LoginModal({ isOpen, onClose, onSwitchToRegister }) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
-            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-shadow"
+            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-warm-100 dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-shadow"
           />
         </div>
 
@@ -136,7 +146,7 @@ export default function LoginModal({ isOpen, onClose, onSwitchToRegister }) {
             htmlFor="login-password"
             className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
           >
-            Password
+            {t("auth.password")}
           </label>
           <input
             id="login-password"
@@ -145,9 +155,20 @@ export default function LoginModal({ isOpen, onClose, onSwitchToRegister }) {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter your password"
-            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-shadow"
+            placeholder={t("auth.passwordPlaceholder")}
+            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-warm-100 dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-shadow"
           />
+        </div>
+
+        {/* Forgot Password */}
+        <div className="text-right">
+          <button
+            type="button"
+            onClick={handleForgotPassword}
+            className="text-sm font-medium text-brand-indigo dark:text-indigo-400 hover:underline focus:outline-none focus:ring-2 focus:ring-brand-indigo rounded"
+          >
+            {t("auth.forgotPassword")}
+          </button>
         </div>
 
         {/* Submit */}
@@ -158,18 +179,18 @@ export default function LoginModal({ isOpen, onClose, onSwitchToRegister }) {
           loading={loading}
           className="w-full"
         >
-          Sign In
+          {t("auth.signInButton")}
         </Button>
 
         {/* Switch to Register */}
         <p className="text-center text-sm text-gray-500 dark:text-gray-400">
-          Don&apos;t have an account?{" "}
+          {t("auth.noAccount")}{" "}
           <button
             type="button"
             onClick={handleSwitchToRegister}
             className="font-semibold text-brand-indigo dark:text-indigo-400 hover:underline focus:outline-none focus:ring-2 focus:ring-brand-indigo rounded"
           >
-            Join PozosPharma
+            {t("auth.joinLink")}
           </button>
         </p>
       </form>

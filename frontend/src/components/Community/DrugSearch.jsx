@@ -1,5 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import useChatStore from "../../store/chatStore";
+import { cacheDrugs, searchOfflineDrugs, getDrugCount } from "../../utils/offlineDB";
+import { useAnalytics } from "../../hooks/useAnalytics";
+import { useTranslation } from "../../i18n/useTranslation";
 
 const API_URL = import.meta.env.VITE_API_URL || "";
 
@@ -13,6 +16,8 @@ const API_URL = import.meta.env.VITE_API_URL || "";
  */
 export default function DrugSearch() {
   const token = useChatStore((s) => s.token);
+  const { track } = useAnalytics();
+  const { t } = useTranslation();
 
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
@@ -20,9 +25,30 @@ export default function DrugSearch() {
   const [error, setError] = useState("");
   const [expandedId, setExpandedId] = useState(null);
   const [hasSearched, setHasSearched] = useState(false);
+  const [isOffline, setIsOffline] = useState(false);
+  const [nhisFilter, setNhisFilter] = useState(false);
 
   const debounceRef = useRef(null);
   const abortRef = useRef(null);
+
+  // Background sync: download all drugs to IndexedDB for offline use
+  useEffect(() => {
+    const syncDrugs = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/drugs/all`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const drugs = data.drugs || [];
+        if (drugs.length > 0) {
+          await cacheDrugs(drugs);
+          console.log(`[DrugSearch] cached ${drugs.length} drugs for offline use`);
+        }
+      } catch {
+        // Offline or failed — silent, will use cached data when needed
+      }
+    };
+    syncDrugs();
+  }, []);
 
   // Debounced search
   const doSearch = useCallback(
@@ -53,10 +79,28 @@ export default function DrugSearch() {
         if (!res.ok) throw new Error("Search failed");
 
         const data = await res.json();
-        setResults(Array.isArray(data) ? data : data.drugs || data.results || []);
+        const drugResults = Array.isArray(data) ? data : data.drugs || data.results || [];
+        setResults(drugResults);
+        setIsOffline(false);
+        if (drugResults.length > 0) {
+          track('drug_search', { query: searchQuery.trim(), results_count: drugResults.length }, '/drugs');
+        }
       } catch (err) {
         if (err.name !== "AbortError") {
-          setError("Failed to search drugs. Please try again.");
+          // Attempt offline fallback
+          try {
+            const offlineResults = await searchOfflineDrugs(searchQuery.trim());
+            if (offlineResults.length > 0) {
+              setResults(offlineResults);
+              setIsOffline(true);
+              setError("");
+            } else {
+              setError("You're offline. No cached results found for this search.");
+              setIsOffline(true);
+            }
+          } catch {
+            setError("Failed to search drugs. Please try again.");
+          }
           console.error("[DrugSearch] error:", err);
         }
       } finally {
@@ -111,14 +155,48 @@ export default function DrugSearch() {
           type="text"
           value={query}
           onChange={handleInputChange}
-          placeholder="Search for any medication..."
-          className="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-shadow shadow-sm"
+          placeholder={t("drugs.search")}
+          className="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-warm-50 dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-shadow shadow-sm"
           aria-label="Search for medications"
         />
         {loading && (
           <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center">
             <div className="w-4 h-4 border-2 border-brand-indigo border-t-transparent rounded-full animate-spin" />
           </div>
+        )}
+      </div>
+
+      {/* Offline indicator */}
+      {isOffline && (
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+          <div className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
+          <p className="text-xs text-amber-700 dark:text-amber-300 font-medium">
+            Offline mode — showing cached results
+          </p>
+        </div>
+      )}
+
+      {/* NHIS Filter Toggle */}
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setNhisFilter((prev) => !prev)}
+          className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full transition-colors ${
+            nhisFilter
+              ? "bg-emerald-600 text-white ring-1 ring-emerald-500"
+              : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 ring-1 ring-gray-300 dark:ring-gray-600 hover:bg-gray-200 dark:hover:bg-gray-700"
+          }`}
+          aria-pressed={nhisFilter}
+        >
+          <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clipRule="evenodd" />
+          </svg>
+          NHIS Covered Only
+        </button>
+        {nhisFilter && results.length > 0 && (
+          <span className="text-[10px] text-gray-400 dark:text-gray-500">
+            Showing NHIS-covered drugs only
+          </span>
         )}
       </div>
 
@@ -138,10 +216,10 @@ export default function DrugSearch() {
             </svg>
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            No medications found for &quot;{query}&quot;
+            {t("drugs.noResults")} &quot;{query}&quot;
           </p>
           <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-            Try a different name or spelling
+            {t("drugs.tryDifferent")}
           </p>
         </div>
       )}
@@ -155,10 +233,10 @@ export default function DrugSearch() {
             </svg>
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Search for any medication...
+            {t("drugs.initialPrompt")}
           </p>
           <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-            Find drug information, interactions, and dosage guidelines
+            {t("drugs.initialSubtext")}
           </p>
         </div>
       )}
@@ -166,14 +244,16 @@ export default function DrugSearch() {
       {/* Results */}
       {results.length > 0 && (
         <div className="space-y-3">
-          {results.map((drug) => {
+          {results
+            .filter((d) => !nhisFilter || d.nhis_covered)
+            .map((drug) => {
             const isExpanded = expandedId === (drug.id || drug.generic_name);
             const drugKey = drug.id || drug.generic_name;
 
             return (
               <div
                 key={drugKey}
-                className="bg-white dark:bg-surface-card-dark rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow"
+                className="bg-warm-50 dark:bg-surface-card-dark rounded-xl border border-warm-200/60 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow"
               >
                 {/* Card Header */}
                 <button
@@ -197,7 +277,7 @@ export default function DrugSearch() {
                                 : "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 ring-1 ring-amber-300 dark:ring-amber-700"
                             }`}
                           >
-                            {drug.otc ? "OTC" : "Prescription"}
+                            {drug.otc ? t("badges.otc") : t("badges.prescription")}
                           </span>
                         )}
                         {/* Controlled substance warning */}
@@ -206,23 +286,25 @@ export default function DrugSearch() {
                             <svg className="w-3 h-3" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                               <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                             </svg>
-                            Controlled
+                            {t("badges.controlled")}
                           </span>
                         )}
+                        {/* NHIS coverage badge */}
+                        {drug.nhis_covered ? (
+                          <span className="inline-flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-semibold rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 ring-1 ring-emerald-300 dark:ring-emerald-700">
+                            <svg className="w-3 h-3" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                              <path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clipRule="evenodd" />
+                            </svg>
+                            NHIS
+                          </span>
+                        ) : null}
                       </div>
 
                       {/* Brand names */}
-                      {drug.brand_names?.length > 0 && (
+                      {drug.brand_names && (
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                           <span className="font-medium">Brands:</span>{" "}
-                          {drug.brand_names.map((b, i) => (
-                            <span key={i}>
-                              <span className={drug.ghana_brand ? "text-brand-emerald dark:text-emerald-400 font-medium" : ""}>
-                                {b}
-                              </span>
-                              {i < drug.brand_names.length - 1 && ", "}
-                            </span>
-                          ))}
+                          {drug.brand_names}
                         </p>
                       )}
 
@@ -230,6 +312,13 @@ export default function DrugSearch() {
                       {drug.drug_class && (
                         <p className="text-xs text-brand-teal dark:text-teal-400 font-medium mt-0.5">
                           {drug.drug_class}
+                        </p>
+                      )}
+
+                      {/* Price display */}
+                      {drug.avg_price_ghs != null && drug.avg_price_ghs > 0 && (
+                        <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mt-0.5">
+                          GHS {Number(drug.avg_price_ghs).toFixed(2)}
                         </p>
                       )}
 
@@ -260,12 +349,12 @@ export default function DrugSearch() {
                     isExpanded ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
                   }`}
                 >
-                  <div className="px-4 pb-4 border-t border-gray-100 dark:border-gray-700/50 pt-3 space-y-3">
+                  <div className="px-4 pb-4 border-t border-warm-200 dark:border-gray-700/50 pt-3 space-y-3">
                     {/* Side Effects */}
                     {drug.side_effects && (
                       <div>
                         <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
-                          Side Effects
+                          {t("drugs.sideEffects")}
                         </h4>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
                           {drug.side_effects}
@@ -277,7 +366,7 @@ export default function DrugSearch() {
                     {drug.interactions && (
                       <div>
                         <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
-                          Drug Interactions
+                          {t("drugs.interactions")}
                         </h4>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
                           {drug.interactions}
@@ -286,13 +375,13 @@ export default function DrugSearch() {
                     )}
 
                     {/* Dosage */}
-                    {drug.dosage && (
+                    {drug.dosage_notes && (
                       <div>
                         <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
-                          Dosage
+                          {t("drugs.dosage")}
                         </h4>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {drug.dosage}
+                          {drug.dosage_notes}
                         </p>
                       </div>
                     )}
@@ -301,7 +390,7 @@ export default function DrugSearch() {
                     {drug.pregnancy_category && (
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                          Pregnancy Category:
+                          {t("drugs.pregnancyCategory")}:
                         </span>
                         <span
                           className={`inline-flex items-center px-2 py-0.5 text-xs font-bold rounded ${
@@ -317,11 +406,46 @@ export default function DrugSearch() {
                       </div>
                     )}
 
+                    {/* NHIS Coverage Details */}
+                    {drug.nhis_covered ? (
+                      <div className="rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700/40 p-3">
+                        <div className="flex items-center gap-2 mb-1">
+                          <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clipRule="evenodd" />
+                          </svg>
+                          <p className="text-xs font-semibold text-emerald-800 dark:text-emerald-300">
+                            NHIS Covered
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-3 text-sm text-emerald-900 dark:text-emerald-200">
+                          {drug.nhis_tier && (
+                            <span>
+                              Tier{" "}
+                              <span className="font-bold">{drug.nhis_tier}</span>
+                              {drug.nhis_tier === "A"
+                                ? " — Essential"
+                                : drug.nhis_tier === "B"
+                                  ? " — Important"
+                                  : " — Supplementary"}
+                            </span>
+                          )}
+                          {drug.avg_price_ghs != null && drug.avg_price_ghs > 0 && (
+                            <span className="text-xs bg-emerald-200 dark:bg-emerald-800 px-1.5 py-0.5 rounded font-medium">
+                              GHS {Number(drug.avg_price_ghs).toFixed(2)}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-emerald-700 dark:text-emerald-400 mt-1">
+                          Covered under the Ghana National Health Insurance Scheme
+                        </p>
+                      </div>
+                    ) : null}
+
                     {/* Ghana-specific info */}
                     {drug.ghana_info && (
                       <div className="rounded-lg bg-ghana-gold/10 dark:bg-yellow-900/20 border border-ghana-gold/30 dark:border-yellow-700/40 p-3">
                         <p className="text-xs font-semibold text-yellow-800 dark:text-yellow-300 mb-0.5">
-                          Ghana-Specific Information
+                          {t("drugs.ghanaInfo")}
                         </p>
                         <p className="text-sm text-yellow-900 dark:text-yellow-200">
                           {drug.ghana_info}
@@ -330,8 +454,8 @@ export default function DrugSearch() {
                     )}
 
                     {/* Disclaimer */}
-                    <p className="text-[10px] text-gray-400 dark:text-gray-500 italic pt-1 border-t border-gray-100 dark:border-gray-700/50">
-                      Always consult a pharmacist or healthcare provider before starting, stopping, or changing medication.
+                    <p className="text-[10px] text-gray-400 dark:text-gray-500 italic pt-1 border-t border-warm-200 dark:border-gray-700/50">
+                      {t("drugs.disclaimer")}
                     </p>
                   </div>
                 </div>

@@ -15,17 +15,19 @@
   }
 
   body {
-    @apply bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100;
+    @apply bg-warm-100 text-warm-900 dark:bg-gray-950 dark:text-gray-100;
     font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
   }
 
-  /* Selection colors */
+  /* Selection colors — gold tinted */
   ::selection {
-    @apply bg-indigo-200 text-indigo-900;
+    background: rgba(201, 168, 76, 0.25);
+    color: #383225;
   }
 
   .dark ::selection {
-    @apply bg-indigo-800 text-indigo-100;
+    background: rgba(201, 168, 76, 0.35);
+    color: #FAF8F3;
   }
 }
 
@@ -253,11 +255,11 @@
    ============================================================ */
 @layer utilities {
   .glass {
-    @apply bg-white/70 dark:bg-gray-900/70 backdrop-blur-lg;
+    @apply bg-warm-50/80 dark:bg-gray-900/70 backdrop-blur-lg;
   }
 
   .glass-subtle {
-    @apply bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm;
+    @apply bg-warm-50/60 dark:bg-gray-900/50 backdrop-blur-sm;
   }
 }
 
@@ -268,4 +270,248 @@
   .transition-theme {
     @apply transition-colors duration-200 ease-in-out;
   }
+}
+
+/* ============================================================
+   Adinkra Gold — Admin & Directory Design System
+   Luxurious dark pharma aesthetic with Ghanaian Kente geometry
+   ============================================================ */
+
+/* Gold shimmer gradient for headings */
+.gold-text {
+  background: linear-gradient(135deg, #C9A84C 0%, #E8D48B 40%, #C9A84C 60%, #A8893A 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Dark glass panel */
+.dark-glass {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid rgba(201, 168, 76, 0.12);
+}
+
+/* Gold glass panel */
+.gold-glass {
+  background: linear-gradient(135deg, rgba(201, 168, 76, 0.08) 0%, rgba(15, 23, 42, 0.9) 100%);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(201, 168, 76, 0.15);
+}
+
+/* Kente diagonal weave overlay */
+.kente-weave::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 20px,
+      rgba(201, 168, 76, 0.03) 20px,
+      rgba(201, 168, 76, 0.03) 22px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 20px,
+      rgba(206, 17, 38, 0.02) 20px,
+      rgba(206, 17, 38, 0.02) 22px
+    );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Noise texture overlay */
+.noise-overlay::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Stagger animation for list items */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-stagger {
+  animation: fadeSlideUp 0.4s ease-out both;
+}
+
+/* Gold underline accent */
+.gold-underline {
+  position: relative;
+}
+.gold-underline::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 40px;
+  height: 2px;
+  background: linear-gradient(90deg, #C9A84C, transparent);
+}
+
+/* Stat card glow */
+.stat-glow {
+  box-shadow: 0 0 0 1px rgba(201, 168, 76, 0.1), 0 4px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* Rank crown glow */
+.crown-glow {
+  box-shadow: 0 0 20px rgba(201, 168, 76, 0.3), 0 0 40px rgba(201, 168, 76, 0.1);
+}
+
+/* Score bar gradient */
+.score-bar-gold {
+  background: linear-gradient(90deg, #A8893A 0%, #C9A84C 50%, #E8D48B 100%);
+}
+
+/* Admin input styling */
+.admin-input {
+  @apply w-full px-3 py-2.5 text-sm rounded-lg border bg-gray-900/50 text-gray-100 placeholder-gray-500 transition-all duration-200;
+  border-color: rgba(201, 168, 76, 0.2);
+}
+.admin-input:focus {
+  border-color: #C9A84C;
+  box-shadow: 0 0 0 2px rgba(201, 168, 76, 0.15);
+  outline: none;
+}
+
+/* Admin select */
+.admin-select {
+  @apply px-3 py-2.5 text-sm rounded-lg border bg-gray-900/50 text-gray-100 transition-all duration-200;
+  border-color: rgba(201, 168, 76, 0.2);
+}
+.admin-select:focus {
+  border-color: #C9A84C;
+  box-shadow: 0 0 0 2px rgba(201, 168, 76, 0.15);
+  outline: none;
+}
+
+/* Podium block */
+@keyframes podiumRise {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+.podium-rise {
+  transform-origin: bottom;
+  animation: podiumRise 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ============================================================
+   Hero Section Animations
+   ============================================================ */
+
+/* Floating particles */
+@keyframes heroFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.15; }
+  25% { transform: translateY(-20px) rotate(5deg); opacity: 0.3; }
+  50% { transform: translateY(-8px) rotate(-3deg); opacity: 0.2; }
+  75% { transform: translateY(-25px) rotate(3deg); opacity: 0.35; }
+}
+
+@keyframes heroDrift {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(15px, -20px) scale(1.05); }
+  66%  { transform: translate(-10px, -10px) scale(0.95); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes heroGlow {
+  0%, 100% { opacity: 0.06; transform: scale(1); }
+  50% { opacity: 0.12; transform: scale(1.15); }
+}
+
+@keyframes heroPulseRing {
+  0% { transform: scale(0.8); opacity: 0.6; }
+  50% { transform: scale(1.2); opacity: 0; }
+  100% { transform: scale(0.8); opacity: 0; }
+}
+
+@keyframes heroReveal {
+  from { opacity: 0; transform: translateY(24px); filter: blur(8px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+@keyframes heroTitleReveal {
+  from { opacity: 0; transform: translateY(30px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes heroShimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes heroOrbitSlow {
+  from { transform: rotate(0deg) translateX(120px) rotate(0deg); }
+  to { transform: rotate(360deg) translateX(120px) rotate(-360deg); }
+}
+
+@keyframes heroOrbitFast {
+  from { transform: rotate(0deg) translateX(80px) rotate(0deg); }
+  to { transform: rotate(-360deg) translateX(80px) rotate(360deg); }
+}
+
+@keyframes heroMorphBlob {
+  0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+  25% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+  50% { border-radius: 50% 60% 30% 60% / 30% 70% 50% 60%; }
+  75% { border-radius: 60% 30% 50% 40% / 70% 50% 60% 30%; }
+}
+
+.hero-reveal {
+  animation: heroReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.hero-title-reveal {
+  animation: heroTitleReveal 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.hero-shimmer-text {
+  background: linear-gradient(
+    90deg,
+    #C9A84C 0%, #E8D48B 25%, #C9A84C 50%, #E8D48B 75%, #C9A84C 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: heroShimmer 4s linear infinite;
+}
+
+.hero-float { animation: heroFloat 6s ease-in-out infinite; }
+.hero-drift { animation: heroDrift 8s ease-in-out infinite; }
+.hero-glow-pulse { animation: heroGlow 4s ease-in-out infinite; }
+.hero-pulse-ring { animation: heroPulseRing 2.5s ease-out infinite; }
+.hero-orbit-slow { animation: heroOrbitSlow 20s linear infinite; }
+.hero-orbit-fast { animation: heroOrbitFast 14s linear infinite; }
+.hero-morph-blob { animation: heroMorphBlob 12s ease-in-out infinite; }
+
+/* Interactive gold button glow on hover */
+.hero-cta-glow {
+  position: relative;
+  overflow: hidden;
+}
+.hero-cta-glow::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(135deg, #C9A84C, #E8D48B, #C9A84C, #A8893A);
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: -1;
+  filter: blur(12px);
+}
+.hero-cta-glow:hover::before {
+  opacity: 0.5;
 }

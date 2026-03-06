@@ -28,6 +28,15 @@ export async function handlePharmacist(request, env, path) {
   if (path === '/api/pharmacist/reviews' && request.method === 'POST') {
     return submitReview(request, env);
   }
+  if (path === '/api/pharmacist/status' && request.method === 'GET') {
+    return getPharmacistStatus(request, env);
+  }
+  if (path === '/api/pharmacist/leaderboard' && request.method === 'GET') {
+    return getLeaderboard(request, env);
+  }
+  if (path === '/api/pharmacist/sessions' && request.method === 'GET') {
+    return getPharmacistSessions(request, env);
+  }
   return null;
 }
 
@@ -206,6 +215,28 @@ async function acceptHandoff(request, env) {
     'UPDATE pharmacists SET total_sessions = total_sessions + 1 WHERE id = ?'
   ).bind(pharmacist.id).run();
 
+  // Broadcast handoff acceptance via Durable Object
+  try {
+    const session = await env.DB.prepare('SELECT room_id FROM sessions WHERE id = ?').bind(entry.session_id).first();
+    const roomSlug = session?.room_id || 'general';
+    const doId = env.CHAT_ROOM.idFromName(roomSlug);
+    const doStub = env.CHAT_ROOM.get(doId);
+
+    await doStub.fetch(new Request('https://internal/broadcast', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'handoff_update',
+        status: 'accepted',
+        pharmacist: pharmacist.full_name || user.username,
+        sessionId: entry.session_id,
+        message: `A verified pharmacist has joined the conversation.`
+      })
+    }));
+  } catch (err) {
+    console.error('DO handoff broadcast failed:', err);
+  }
+
   // Get message history
   const messages = await env.DB.prepare(
     'SELECT * FROM messages WHERE session_id = ? ORDER BY created_at ASC'
@@ -271,6 +302,67 @@ async function submitReview(request, env) {
   ).bind(avg?.avg || 0, pharmacistId).run();
 
   return json({ success: true });
+}
+
+async function getPharmacistStatus(request, env) {
+  const user = await authMiddleware(request, env);
+  if (!user) return json({ error: 'Unauthorized' }, 401);
+
+  const pharm = await env.DB.prepare(
+    'SELECT is_verified, tier, composite_score FROM pharmacists WHERE user_id = ?'
+  ).bind(user.userId).first();
+
+  if (!pharm) return json({ status: 'none' });
+  if (!pharm.is_verified) return json({ status: 'pending' });
+  return json({ status: 'verified', tier: pharm.tier, compositeScore: pharm.composite_score });
+}
+
+async function getLeaderboard(request, env) {
+  const { user, error } = await requireRole(request, env, 'pharmacist');
+  if (error) return error;
+
+  const leaderboard = await env.DB.prepare(
+    `SELECT p.id, p.full_name, p.specialization, p.rating, p.total_sessions,
+      p.composite_score, p.tier, p.response_time_avg, p.badge_level, p.is_online,
+      u.username, u.avatar_url,
+      (SELECT COUNT(*) FROM reviews r WHERE r.pharmacist_id = p.id) as review_count
+     FROM pharmacists p JOIN users u ON p.user_id = u.id
+     WHERE p.is_verified = 1
+     ORDER BY p.composite_score DESC, p.rating DESC`
+  ).all();
+
+  // Find current user's rank
+  const currentPharm = await env.DB.prepare(
+    'SELECT id FROM pharmacists WHERE user_id = ?'
+  ).bind(user.userId).first();
+
+  const rankings = (leaderboard.results || []).map((p, index) => ({
+    ...p,
+    rank: index + 1,
+    isCurrentUser: p.id === currentPharm?.id
+  }));
+
+  return json({ leaderboard: rankings });
+}
+
+async function getPharmacistSessions(request, env) {
+  const { user, error } = await requireRole(request, env, 'pharmacist');
+  if (error) return error;
+
+  const pharm = await env.DB.prepare(
+    'SELECT id FROM pharmacists WHERE user_id = ?'
+  ).bind(user.userId).first();
+  if (!pharm) return json({ sessions: [] });
+
+  const sessions = await env.DB.prepare(
+    `SELECT s.id, s.topic, s.room_id, s.status, s.started_at, u.username,
+      (SELECT COUNT(*) FROM messages m WHERE m.session_id = s.id AND m.sender_id != ? AND m.created_at > COALESCE(s.handoff_accepted_at, s.started_at)) as unread_count
+     FROM sessions s JOIN users u ON s.user_id = u.id
+     WHERE s.pharmacist_id = ? AND s.status = 'pharmacist_active'
+     ORDER BY s.started_at DESC`
+  ).bind(user.userId, pharm.id).all();
+
+  return json({ sessions: sessions.results || [] });
 }
 
 function json(data, status = 200) {

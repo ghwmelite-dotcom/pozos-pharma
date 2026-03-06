@@ -69,7 +69,7 @@ export default function FAQPanel() {
         <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
           Frequently Asked Questions
         </h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
           Common pharmaceutical questions for the Ghanaian community
         </p>
       </div>
@@ -78,7 +78,7 @@ export default function FAQPanel() {
         {FAQ_ITEMS.map((item, index) => (
           <div
             key={index}
-            className="bg-white dark:bg-surface-card-dark rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden transition-shadow hover:shadow-sm"
+            className="bg-warm-50 dark:bg-surface-card-dark rounded-xl border border-warm-200/60 dark:border-gray-700 overflow-hidden transition-shadow hover:shadow-sm"
           >
             {/* Question Button */}
             <button
@@ -116,11 +116,11 @@ export default function FAQPanel() {
               role="region"
               aria-labelledby={`faq-question-${index}`}
             >
-              <div className="px-5 pb-4 border-t border-gray-100 dark:border-gray-700/50 pt-3">
+              <div className="px-5 pb-4 border-t border-warm-200 dark:border-gray-700/50 pt-3">
                 <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                   {item.answer}
                 </p>
-                <p className="mt-2 text-[10px] text-gray-400 dark:text-gray-500 italic">
+                <p className="mt-2 text-[10px] text-gray-600 dark:text-gray-500 italic">
                   Disclaimer: This is general guidance. Always consult your pharmacist for personalized advice.
                 </p>
               </div>

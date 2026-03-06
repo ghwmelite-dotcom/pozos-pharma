@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import useAuth from "../../hooks/useAuth";
+import useWebSocket from "../../hooks/useWebSocket";
 import Button from "../UI/Button";
 import Badge from "../UI/Badge";
+import VideoCall from "./VideoCall";
+import Leaderboard from "./Leaderboard";
 
 const API_URL = import.meta.env.VITE_API_URL || "";
 
@@ -27,8 +30,57 @@ export default function PharmacistDashboard() {
   const [error, setError] = useState("");
   const [togglingOnline, setTogglingOnline] = useState(false);
   const [acceptingId, setAcceptingId] = useState(null);
+  const [videoCallActive, setVideoCallActive] = useState(false);
+  const [videoRemoteUserId, setVideoRemoteUserId] = useState(null);
+  const [videoRoomSlug, setVideoRoomSlug] = useState(null);
+  const [videoIsInitiator, setVideoIsInitiator] = useState(false);
+  const [incomingCallFrom, setIncomingCallFrom] = useState(null);
+  const [incomingCallRoom, setIncomingCallRoom] = useState(null);
 
   const intervalRef = useRef(null);
+  const lastVideoSignalRef = useRef(null);
+
+  // Connect WebSocket for the active video room (only when in a call or watching a session)
+  const { sendWsMessage, videoSignal } = useWebSocket(videoRoomSlug);
+
+  // Handle incoming video signals
+  useEffect(() => {
+    if (!videoSignal || videoSignal === lastVideoSignalRef.current) return;
+    lastVideoSignalRef.current = videoSignal;
+
+    if (videoSignal.type === "video_offer" && !videoCallActive) {
+      setIncomingCallFrom(videoSignal.fromUserId);
+      setIncomingCallRoom(videoRoomSlug);
+    }
+  }, [videoSignal, videoCallActive, videoRoomSlug]);
+
+  // Start video call for a specific session
+  const handleStartVideoCall = useCallback((session) => {
+    setVideoRoomSlug(session.room_slug);
+    setVideoRemoteUserId(session.user_id);
+    setVideoIsInitiator(true);
+    setVideoCallActive(true);
+  }, []);
+
+  const handleAcceptVideoCall = useCallback(() => {
+    setVideoRemoteUserId(incomingCallFrom);
+    setVideoIsInitiator(false);
+    setVideoCallActive(true);
+    setIncomingCallFrom(null);
+    setIncomingCallRoom(null);
+  }, [incomingCallFrom]);
+
+  const handleDeclineVideoCall = useCallback(() => {
+    setIncomingCallFrom(null);
+    setIncomingCallRoom(null);
+  }, []);
+
+  const handleEndVideoCall = useCallback(() => {
+    setVideoCallActive(false);
+    setVideoRemoteUserId(null);
+    setVideoRoomSlug(null);
+    setVideoIsInitiator(false);
+  }, []);
 
   const headers = {
     "Content-Type": "application/json",
@@ -121,12 +173,12 @@ export default function PharmacistDashboard() {
   const handleAccept = async (handoffId) => {
     setAcceptingId(handoffId);
     try {
-      const res = await fetch(`${API_URL}/api/handoff/${handoffId}/accept`, {
+      const res = await fetch(`${API_URL}/api/handoff/accept`, {
         method: "POST",
         headers,
+        body: JSON.stringify({ queueId: handoffId }),
       });
       if (!res.ok) throw new Error("Failed to accept handoff");
-      // Refresh queue and sessions
       await Promise.all([fetchQueue(), fetchActiveSessions()]);
     } catch (err) {
       console.error("[PharmacistDashboard] acceptHandoff:", err);
@@ -230,7 +282,7 @@ export default function PharmacistDashboard() {
             Pharmacist Dashboard
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-            Akwaaba, {user?.username || "Pharmacist"}! Manage your sessions and handoff requests.
+            Welcome, {user?.username || "Pharmacist"}! Manage your sessions and handoff requests.
           </p>
         </div>
         <Button
@@ -240,7 +292,7 @@ export default function PharmacistDashboard() {
           loading={togglingOnline}
           className={isOnline ? "" : ""}
         >
-          <span className={`w-2.5 h-2.5 rounded-full ${isOnline ? "bg-white animate-pulse" : "bg-gray-400"}`} aria-hidden="true" />
+          <span className={`w-2.5 h-2.5 rounded-full ${isOnline ? "bg-warm-50 animate-pulse" : "bg-gray-400"}`} aria-hidden="true" />
           {isOnline ? "Online" : "Go Online"}
         </Button>
       </div>
@@ -250,7 +302,7 @@ export default function PharmacistDashboard() {
         {statCards.map((card) => (
           <div
             key={card.label}
-            className="bg-white dark:bg-surface-card-dark rounded-xl border border-gray-200 dark:border-gray-700 p-4 flex items-center gap-3"
+            className="bg-warm-50 dark:bg-surface-card-dark rounded-xl border border-warm-200/60 dark:border-gray-700 p-4 flex items-center gap-3"
           >
             <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${card.color}`}>
               {card.icon}
@@ -276,7 +328,7 @@ export default function PharmacistDashboard() {
           </div>
 
           {queue.length === 0 ? (
-            <div className="bg-white dark:bg-surface-card-dark rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
+            <div className="bg-warm-50 dark:bg-surface-card-dark rounded-xl border border-warm-200/60 dark:border-gray-700 p-8 text-center">
               <div className="w-12 h-12 mx-auto rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center mb-3">
                 <svg className="w-6 h-6 text-brand-emerald" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -290,12 +342,12 @@ export default function PharmacistDashboard() {
               {queue.map((item) => (
                 <div
                   key={item.id}
-                  className={`bg-white dark:bg-surface-card-dark rounded-xl border p-4 transition-shadow hover:shadow-md ${
+                  className={`bg-warm-50 dark:bg-surface-card-dark rounded-xl border p-4 transition-shadow hover:shadow-md ${
                     item.urgency === "emergency"
                       ? "border-red-300 dark:border-red-700"
                       : item.urgency === "urgent"
                         ? "border-amber-300 dark:border-amber-700"
-                        : "border-gray-200 dark:border-gray-700"
+                        : "border-warm-200/60 dark:border-gray-700"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -345,16 +397,15 @@ export default function PharmacistDashboard() {
           </h2>
 
           {activeSessions.length === 0 ? (
-            <div className="bg-white dark:bg-surface-card-dark rounded-xl border border-gray-200 dark:border-gray-700 p-6 text-center">
+            <div className="bg-warm-50 dark:bg-surface-card-dark rounded-xl border border-warm-200/60 dark:border-gray-700 p-6 text-center">
               <p className="text-sm text-gray-500 dark:text-gray-400">No active sessions</p>
             </div>
           ) : (
             <div className="space-y-2">
               {activeSessions.map((session) => (
-                <button
+                <div
                   key={session.id}
-                  type="button"
-                  className="w-full text-left bg-white dark:bg-surface-card-dark rounded-lg border border-gray-200 dark:border-gray-700 p-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                  className="w-full text-left bg-warm-50 dark:bg-surface-card-dark rounded-lg border border-warm-200/60 dark:border-gray-700 p-3 hover:bg-warm-200/40 dark:hover:bg-gray-800 transition-colors"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex-1 min-w-0">
@@ -365,18 +416,104 @@ export default function PharmacistDashboard() {
                         {session.topic || session.room_slug || "Chat"}
                       </p>
                     </div>
-                    {session.unread_count > 0 && (
-                      <span className="ml-2 inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold text-white bg-brand-indigo rounded-full shrink-0">
-                        {session.unread_count > 9 ? "9+" : session.unread_count}
-                      </span>
-                    )}
+                    <div className="flex items-center gap-2 ml-2 shrink-0">
+                      {/* Video call button */}
+                      <button
+                        type="button"
+                        onClick={() => handleStartVideoCall(session)}
+                        className="p-1.5 rounded-lg text-brand-teal hover:bg-teal-50 dark:hover:bg-teal-900/30 transition-colors"
+                        aria-label="Start video call"
+                        title="Start video call"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z"
+                          />
+                        </svg>
+                      </button>
+                      {session.unread_count > 0 && (
+                        <span className="inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold text-white bg-brand-indigo rounded-full">
+                          {session.unread_count > 9 ? "9+" : session.unread_count}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </button>
+                </div>
               ))}
             </div>
           )}
         </div>
       </div>
+
+      {/* Incoming video call prompt */}
+      {incomingCallFrom && !videoCallActive && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-warm-50 dark:bg-surface-card-dark rounded-2xl shadow-2xl p-6 max-w-sm mx-4 text-center">
+            <div className="w-16 h-16 mx-auto rounded-full bg-brand-teal/10 dark:bg-teal-900/30 flex items-center justify-center mb-4 animate-pulse">
+              <svg
+                className="w-8 h-8 text-brand-teal"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
+              Incoming Video Call
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+              A user is requesting a video consultation.
+            </p>
+            <div className="flex items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={handleDeclineVideoCall}
+                className="px-5 py-2.5 rounded-xl bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              >
+                Decline
+              </button>
+              <button
+                type="button"
+                onClick={handleAcceptVideoCall}
+                className="px-5 py-2.5 rounded-xl bg-brand-teal text-white font-medium hover:bg-teal-600 transition-colors"
+              >
+                Accept
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Leaderboard */}
+      <div className="mt-8">
+        <Leaderboard />
+      </div>
+
+      {/* Video call overlay */}
+      {videoCallActive && videoRemoteUserId && (
+        <VideoCall
+          roomSlug={videoRoomSlug}
+          remoteUserId={videoRemoteUserId}
+          onEnd={handleEndVideoCall}
+          isInitiator={videoIsInitiator}
+          sendSignal={sendWsMessage}
+          incomingSignal={videoSignal}
+        />
+      )}
     </div>
   );
 }

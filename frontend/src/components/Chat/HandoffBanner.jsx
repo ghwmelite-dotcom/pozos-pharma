@@ -181,7 +181,7 @@ function AcceptedBanner({ pharmacist }) {
 
 function UnavailableBanner() {
   return (
-    <div className="rounded-lg mx-2 my-2 px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+    <div className="rounded-lg mx-2 my-2 px-4 py-3 bg-warm-100 dark:bg-gray-800 border border-warm-200/60 dark:border-gray-700">
       <div className="flex items-center gap-3">
         {/* Offline icon */}
         <div

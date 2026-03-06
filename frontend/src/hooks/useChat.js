@@ -20,7 +20,7 @@ import useWebSocket from "./useWebSocket";
  * }}
  */
 export default function useChat(roomSlug) {
-  const { sendWsMessage, isConnected, onlineUsers } = useWebSocket(roomSlug);
+  const { sendWsMessage, isConnected, onlineUsers, videoSignal } = useWebSocket(roomSlug);
 
   const messages = useChatStore((s) => s.messages);
   const typingUsersMap = useChatStore((s) => s.typingUsers);
@@ -57,16 +57,8 @@ export default function useChat(roomSlug) {
       }
 
       // Persist via API (includes optimistic update in store)
+      // The DO will broadcast the message after the REST API saves it
       const result = await storeSendMessage(roomSlug, content.trim());
-
-      // Broadcast via WebSocket for real-time delivery to other clients
-      sendWsMessage({
-        type: "message",
-        content: content.trim(),
-        username: user?.username,
-        room_slug: roomSlug,
-        id: result?.id,
-      });
 
       return result;
     },
@@ -137,5 +129,7 @@ export default function useChat(roomSlug) {
     stopTyping,
     isConnected,
     onlineUsers,
+    sendWsMessage,
+    videoSignal,
   };
 }

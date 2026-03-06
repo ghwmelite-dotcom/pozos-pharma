@@ -6,6 +6,8 @@ import TypingIndicator from "./TypingIndicator";
 import HandoffBanner from "./HandoffBanner";
 import AIDisclaimer from "./AIDisclaimer";
 import Button from "../UI/Button";
+import VoiceInput from "./VoiceInput";
+import VideoCall from "../Pharmacist/VideoCall";
 
 /**
  * PozosPharma Chat Window
@@ -20,7 +22,12 @@ import Button from "../UI/Button";
 export default function ChatWindow({ roomSlug, onRoomChange }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
+  const [videoCallActive, setVideoCallActive] = useState(false);
+  const [videoRemoteUserId, setVideoRemoteUserId] = useState(null);
+  const [videoIsInitiator, setVideoIsInitiator] = useState(false);
+  const [incomingCallFrom, setIncomingCallFrom] = useState(null);
 
+  const connectionStatus = useChatStore((s) => s.connectionStatus);
   const rooms = useChatStore((s) => s.rooms);
   const sessions = useChatStore((s) => s.sessions);
   const handoffStatus = useChatStore((s) => s.handoffStatus);
@@ -35,12 +42,57 @@ export default function ChatWindow({ roomSlug, onRoomChange }) {
     stopTyping,
     isConnected,
     onlineUsers,
+    sendWsMessage,
+    videoSignal,
   } = useChat(roomSlug);
 
   // Fetch rooms on mount
   useEffect(() => {
     fetchRooms();
   }, [fetchRooms]);
+
+  // Handle incoming video call offer (show prompt if not already in a call)
+  const lastVideoSignalRef = useRef(null);
+  useEffect(() => {
+    if (!videoSignal || videoSignal === lastVideoSignalRef.current) return;
+    lastVideoSignalRef.current = videoSignal;
+
+    if (videoSignal.type === "video_offer" && !videoCallActive) {
+      setIncomingCallFrom(videoSignal.fromUserId);
+    }
+  }, [videoSignal, videoCallActive]);
+
+  // Start a video call (initiator side)
+  const handleStartVideoCall = useCallback(() => {
+    // Find the other user (pharmacist or patient) from onlineUsers
+    const otherUser = onlineUsers.find(
+      (u) => u.userId !== user?.id && u.userId !== user?.username
+    );
+    if (!otherUser) return;
+    setVideoRemoteUserId(otherUser.userId);
+    setVideoIsInitiator(true);
+    setVideoCallActive(true);
+  }, [onlineUsers, user]);
+
+  // Accept incoming video call
+  const handleAcceptVideoCall = useCallback(() => {
+    setVideoRemoteUserId(incomingCallFrom);
+    setVideoIsInitiator(false);
+    setVideoCallActive(true);
+    setIncomingCallFrom(null);
+  }, [incomingCallFrom]);
+
+  // Decline incoming video call
+  const handleDeclineVideoCall = useCallback(() => {
+    setIncomingCallFrom(null);
+  }, []);
+
+  // End video call
+  const handleEndVideoCall = useCallback(() => {
+    setVideoCallActive(false);
+    setVideoRemoteUserId(null);
+    setVideoIsInitiator(false);
+  }, []);
 
   // Auto-scroll to bottom on new messages
   const messagesEndRef = useRef(null);
@@ -81,6 +133,15 @@ export default function ChatWindow({ roomSlug, onRoomChange }) {
       stopTyping();
     }
   };
+
+  // Handle voice transcription result
+  const handleVoiceTranscribe = useCallback((text) => {
+    setInputValue((prev) => {
+      const combined = prev ? `${prev} ${text}` : text;
+      return combined;
+    });
+    document.getElementById("chat-input")?.focus();
+  }, []);
 
   // Quick-trigger /pharmacist command
   const handlePharmacistTrigger = () => {
@@ -129,15 +190,15 @@ export default function ChatWindow({ roomSlug, onRoomChange }) {
           fixed inset-y-0 left-0 z-40 w-72
           lg:static lg:z-auto
           flex flex-col
-          bg-white dark:bg-surface-card-dark
-          border-r border-gray-200 dark:border-gray-700
+          bg-warm-50 dark:bg-surface-card-dark
+          border-r border-warm-200/60 dark:border-gray-700
           transform transition-transform duration-200 ease-in-out
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
         aria-label="Chat sidebar"
       >
         {/* Sidebar header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-warm-200/60 dark:border-gray-700">
           <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wider">
             Rooms
           </h2>
@@ -188,7 +249,7 @@ export default function ChatWindow({ roomSlug, onRoomChange }) {
                   ${
                     isActive
                       ? "bg-brand-indigo/10 dark:bg-indigo-900/30 text-brand-indigo dark:text-indigo-300 border-r-2 border-brand-indigo"
-                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-warm-200/40 dark:hover:bg-gray-800"
                   }
                 `}
                 aria-current={isActive ? "page" : undefined}
@@ -220,7 +281,7 @@ export default function ChatWindow({ roomSlug, onRoomChange }) {
 
         {/* Session history */}
         {sessions.length > 0 && (
-          <div className="border-t border-gray-200 dark:border-gray-700">
+          <div className="border-t border-warm-200/60 dark:border-gray-700">
             <h3 className="px-4 pt-3 pb-1 text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
               Recent Sessions
             </h3>
@@ -228,7 +289,7 @@ export default function ChatWindow({ roomSlug, onRoomChange }) {
               {sessions.slice(0, 5).map((session) => (
                 <div
                   key={session.id}
-                  className="px-4 py-1.5 text-xs text-gray-500 dark:text-gray-400 truncate hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
+                  className="px-4 py-1.5 text-xs text-gray-500 dark:text-gray-400 truncate hover:bg-warm-200/40 dark:hover:bg-gray-800 cursor-pointer"
                 >
                   {session.title || session.id}
                 </div>
@@ -239,7 +300,7 @@ export default function ChatWindow({ roomSlug, onRoomChange }) {
 
         {/* User info */}
         {user && (
-          <div className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center gap-2">
+          <div className="border-t border-warm-200/60 dark:border-gray-700 px-4 py-3 flex items-center gap-2">
             <div className="w-7 h-7 rounded-full bg-brand-indigo/20 dark:bg-indigo-900/40 flex items-center justify-center text-xs font-bold text-brand-indigo dark:text-indigo-300">
               {user.username?.[0]?.toUpperCase() || "?"}
             </div>
@@ -253,13 +314,13 @@ export default function ChatWindow({ roomSlug, onRoomChange }) {
       {/* ── Main Chat Area ─────────────────────────────────────── */}
       <main className="flex-1 flex flex-col min-w-0">
         {/* Top bar: mobile menu + room name + disclaimer */}
-        <header className="shrink-0 border-b border-gray-200 dark:border-gray-700">
+        <header className="shrink-0 border-b border-warm-200/60 dark:border-gray-700">
           <div className="flex items-center gap-3 px-4 py-2">
             {/* Mobile sidebar toggle */}
             <button
               type="button"
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-1.5 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-800"
+              className="lg:hidden p-1.5 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-warm-200/60 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-800"
               aria-label="Open sidebar"
             >
               <svg
@@ -284,11 +345,48 @@ export default function ChatWindow({ roomSlug, onRoomChange }) {
                 {onlineUsers.length} online
               </span>
             )}
+
+            {/* Video call button - visible only when handoff is active */}
+            {handoffStatus === "active" && (
+              <button
+                type="button"
+                onClick={handleStartVideoCall}
+                className="ml-auto p-1.5 rounded-lg text-brand-teal hover:bg-teal-50 dark:hover:bg-teal-900/30 transition-colors"
+                aria-label="Start video call"
+                title="Start video call"
+              >
+                <svg
+                  className="w-5 h-5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z"
+                  />
+                </svg>
+              </button>
+            )}
           </div>
 
           {/* AI Disclaimer */}
           <AIDisclaimer />
         </header>
+
+        {/* Connection status banner */}
+        {connectionStatus === 'connecting' && (
+          <div className="px-4 py-1.5 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800 text-center">
+            <span className="text-xs font-medium text-amber-700 dark:text-amber-300">Reconnecting...</span>
+          </div>
+        )}
+        {connectionStatus === 'disconnected' && (
+          <div className="px-4 py-1.5 bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800 text-center">
+            <span className="text-xs font-medium text-red-700 dark:text-red-300">Disconnected — messages may not be delivered</span>
+          </div>
+        )}
 
         {/* Handoff Banner */}
         <HandoffBanner
@@ -323,7 +421,7 @@ export default function ChatWindow({ roomSlug, onRoomChange }) {
                 </svg>
               </div>
               <h3 className="text-base font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                Akwaaba! Welcome
+                Welcome!
               </h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs">
                 Ask PozosBot a pharmacy question, or type{" "}
@@ -350,6 +448,8 @@ export default function ChatWindow({ roomSlug, onRoomChange }) {
                 drugRefs: msg.metadata?.drug_refs,
                 rating: msg.metadata?.rating,
                 countryFlag: msg.metadata?.country_flag,
+                status: msg.status,
+                onRetry: msg.status === 'failed' ? () => useChatStore.getState().retryMessage(msg.id, roomSlug) : undefined,
               }}
             />
           ))}
@@ -362,7 +462,7 @@ export default function ChatWindow({ roomSlug, onRoomChange }) {
         </div>
 
         {/* ── Input Bar ────────────────────────────────────────── */}
-        <div className="shrink-0 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-card-dark px-3 py-3 sm:px-4">
+        <div className="shrink-0 border-t border-warm-200/60 dark:border-gray-700 bg-warm-50 dark:bg-surface-card-dark px-3 py-3 sm:px-4">
           <div className="flex items-end gap-2">
             {/* Pharmacist quick-trigger chip */}
             <button
@@ -391,7 +491,7 @@ export default function ChatWindow({ roomSlug, onRoomChange }) {
                 onKeyDown={handleKeyDown}
                 placeholder="Type your message..."
                 rows={1}
-                className="w-full resize-none rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 px-4 py-2.5 pr-12 focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-shadow"
+                className="w-full resize-none rounded-xl border border-gray-300 dark:border-gray-600 bg-warm-100 dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 px-4 py-2.5 pr-12 focus:outline-none focus:ring-2 focus:ring-brand-indigo focus:border-transparent transition-shadow"
                 aria-label="Message input"
                 style={{
                   maxHeight: "120px",
@@ -399,6 +499,12 @@ export default function ChatWindow({ roomSlug, onRoomChange }) {
                 }}
               />
             </div>
+
+            {/* Voice input */}
+            <VoiceInput
+              onTranscribe={handleVoiceTranscribe}
+              disabled={false}
+            />
 
             {/* Send button */}
             <Button
@@ -440,6 +546,63 @@ export default function ChatWindow({ roomSlug, onRoomChange }) {
           </div>
         </div>
       </main>
+
+      {/* Incoming video call prompt */}
+      {incomingCallFrom && !videoCallActive && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-warm-50 dark:bg-surface-card-dark rounded-2xl shadow-2xl p-6 max-w-sm mx-4 text-center">
+            <div className="w-16 h-16 mx-auto rounded-full bg-brand-teal/10 dark:bg-teal-900/30 flex items-center justify-center mb-4 animate-pulse">
+              <svg
+                className="w-8 h-8 text-brand-teal"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
+              Incoming Video Call
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+              A pharmacist is requesting a video consultation.
+            </p>
+            <div className="flex items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={handleDeclineVideoCall}
+                className="px-5 py-2.5 rounded-xl bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              >
+                Decline
+              </button>
+              <button
+                type="button"
+                onClick={handleAcceptVideoCall}
+                className="px-5 py-2.5 rounded-xl bg-brand-teal text-white font-medium hover:bg-teal-600 transition-colors"
+              >
+                Accept
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Video call overlay */}
+      {videoCallActive && videoRemoteUserId && (
+        <VideoCall
+          roomSlug={roomSlug}
+          remoteUserId={videoRemoteUserId}
+          onEnd={handleEndVideoCall}
+          isInitiator={videoIsInitiator}
+          sendSignal={sendWsMessage}
+          incomingSignal={videoSignal}
+        />
+      )}
     </div>
   );
 }

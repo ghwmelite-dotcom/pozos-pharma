@@ -1,9 +1,15 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import useChatStore from "../store/chatStore";
 
-const WS_BASE =
-  import.meta.env.VITE_WS_URL ||
-  `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}`;
+const WS_BASE = (() => {
+  if (import.meta.env.VITE_WS_URL) return import.meta.env.VITE_WS_URL;
+  // Derive WS URL from API URL (Worker host, not Pages host)
+  const apiUrl = import.meta.env.VITE_API_URL || '';
+  if (apiUrl) {
+    return apiUrl.replace(/^https:/, 'wss:').replace(/^http:/, 'ws:');
+  }
+  return `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}`;
+})();
 
 const MAX_RECONNECT_DELAY = 30000; // 30 seconds
 const INITIAL_RECONNECT_DELAY = 1000; // 1 second
@@ -27,6 +33,7 @@ export default function useWebSocket(roomSlug) {
   const mountedRef = useRef(true);
 
   const [onlineUsers, setOnlineUsers] = useState([]);
+  const [videoSignal, setVideoSignal] = useState(null);
 
   const token = useChatStore((s) => s.token);
   const user = useChatStore((s) => s.user);
@@ -57,6 +64,8 @@ export default function useWebSocket(roomSlug) {
 
     cleanup();
 
+    useChatStore.getState().setConnectionStatus('connecting');
+
     const wsUrl = `${WS_BASE}/ws/${roomSlug}`;
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
@@ -70,13 +79,7 @@ export default function useWebSocket(roomSlug) {
 
       // Send authentication message
       if (token) {
-        ws.send(
-          JSON.stringify({
-            type: "auth",
-            token,
-            username: user?.username,
-          })
-        );
+        ws.send(JSON.stringify({ type: "auth", token }));
       }
 
       // Start ping/keepalive interval
@@ -121,7 +124,7 @@ export default function useWebSocket(roomSlug) {
                 if (mountedRef.current) {
                   removeTypingUser(roomSlug, data.username);
                 }
-              }, 4000);
+              }, 2000);
             } else {
               removeTypingUser(roomSlug, data.username);
             }
@@ -146,8 +149,42 @@ export default function useWebSocket(roomSlug) {
           setOnlineUsers(data.users || []);
           break;
 
+        case "video_offer":
+        case "video_answer":
+        case "video_ice":
+          // Forward WebRTC signaling data to subscribers
+          setVideoSignal({ ...data, _ts: Date.now() });
+          break;
+
+        case "history": {
+          const setMessages = useChatStore.getState().setMessages;
+          const existingMessages = useChatStore.getState().messages;
+          // Merge history with existing messages, deduplicating by ID
+          const existingIds = new Set(existingMessages.map((m) => m.id));
+          const newMessages = (data.messages || [])
+            .filter((m) => !existingIds.has(m.id))
+            .map((m) => ({
+              id: m.id,
+              content: m.content,
+              sender: m.sender_id === 'pozosbot' ? 'PozosBot' : m.sender_id,
+              sender_type: m.sender_type || 'user',
+              room_slug: roomSlug,
+              created_at: m.created_at,
+            }));
+          if (newMessages.length > 0) {
+            // Prepend history before existing messages
+            setMessages([...newMessages, ...existingMessages]);
+          }
+          break;
+        }
+
         case "pong":
           // Keepalive acknowledged — nothing to do
+          break;
+
+        case "auth_expired":
+          console.warn("[useWebSocket] Token expired, logging out");
+          useChatStore.getState().logout();
           break;
 
         case "error":
@@ -225,5 +262,5 @@ export default function useWebSocket(roomSlug) {
 
   const isConnected = useChatStore((s) => s.isConnected);
 
-  return { sendWsMessage, isConnected, onlineUsers };
+  return { sendWsMessage, isConnected, onlineUsers, videoSignal };
 }

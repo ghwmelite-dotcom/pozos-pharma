@@ -1,7 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 48" width="240" height="48">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 44" width="44" height="44">
   <defs>
-    <!-- Ghana flag stripe gradient for accent -->
-    <linearGradient id="ghanaStripe" x1="0" y1="0" x2="1" y2="0">
+    <linearGradient id="bg" x1="0" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#1A1520"/>
+      <stop offset="100%" stop-color="#0D0B12"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#A8893A"/>
+      <stop offset="40%" stop-color="#C9A84C"/>
+      <stop offset="70%" stop-color="#E8D48B"/>
+      <stop offset="100%" stop-color="#C9A84C"/>
+    </linearGradient>
+    <linearGradient id="ghana" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0%" stop-color="#CE1126"/>
       <stop offset="33.33%" stop-color="#CE1126"/>
       <stop offset="33.33%" stop-color="#FCD116"/>
@@ -9,37 +18,31 @@
       <stop offset="66.66%" stop-color="#006B3F"/>
       <stop offset="100%" stop-color="#006B3F"/>
     </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="1" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
   </defs>
 
-  <!-- Pill/Cross Icon -->
-  <g transform="translate(4, 4)">
-    <!-- Pill capsule -->
-    <rect x="2" y="12" width="32" height="16" rx="8" ry="8" fill="#4F46E5" opacity="0.9"/>
-    <!-- Pill divider line -->
-    <line x1="18" y1="12" x2="18" y2="28" stroke="white" stroke-width="1.5" opacity="0.6"/>
-    <!-- Right half teal tint -->
-    <clipPath id="rightHalf">
-      <rect x="18" y="12" width="16" height="16"/>
-    </clipPath>
-    <rect x="2" y="12" width="32" height="16" rx="8" ry="8" fill="#0D9488" clip-path="url(#rightHalf)"/>
+  <!-- Background -->
+  <rect width="44" height="44" rx="10" ry="10" fill="url(#bg)"/>
 
-    <!-- Cross/Plus overlay (small, centered on pill) -->
-    <g transform="translate(11, 14)" fill="white" opacity="0.85">
-      <rect x="3" y="0" width="2" height="8" rx="0.5"/>
-      <rect x="0" y="3" width="8" height="2" rx="0.5"/>
-    </g>
+  <!-- Subtle kente lines -->
+  <line x1="0" y1="0" x2="44" y2="44" stroke="#C9A84C" stroke-width="0.3" opacity="0.08"/>
+  <line x1="44" y1="0" x2="0" y2="44" stroke="#C9A84C" stroke-width="0.3" opacity="0.08"/>
+
+  <!-- Gold ring -->
+  <circle cx="22" cy="20" r="14" fill="none" stroke="#C9A84C" stroke-width="0.6" opacity="0.15"/>
+
+  <!-- Medical cross -->
+  <g transform="translate(22, 20)" fill="url(#gold)" filter="url(#glow)">
+    <rect x="-3.5" y="-10" width="7" height="20" rx="1.5"/>
+    <rect x="-10" y="-3.5" width="20" height="7" rx="1.5"/>
   </g>
 
-  <!-- "Pozos" text — bold, indigo -->
-  <text x="46" y="33" font-family="'Inter', 'Segoe UI', system-ui, sans-serif" font-size="24" font-weight="700" fill="#4F46E5" letter-spacing="-0.5">
-    Pozos
-  </text>
-
-  <!-- "Pharma" text — medium, teal -->
-  <text x="117" y="33" font-family="'Inter', 'Segoe UI', system-ui, sans-serif" font-size="24" font-weight="500" fill="#0D9488" letter-spacing="-0.5">
-    Pharma
-  </text>
-
-  <!-- Ghana flag stripe accent bar at bottom -->
-  <rect x="46" y="39" width="150" height="3" rx="1.5" fill="url(#ghanaStripe)"/>
+  <!-- Ghana stripe at bottom -->
+  <rect x="8" y="37" width="28" height="2.5" rx="1.25" fill="url(#ghana)" opacity="0.7"/>
 </svg>

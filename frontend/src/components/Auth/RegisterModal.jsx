@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import useAuth from "../../hooks/useAuth";
 import Modal from "../UI/Modal";
 import Button from "../UI/Button";
+import { useTranslation } from "../../i18n/useTranslation";
 
 /**
  * Password strength evaluator.
@@ -41,6 +42,7 @@ function evaluateStrength(pw) {
  */
 export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }) {
   const { register } = useAuth();
+  const { t } = useTranslation();
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -117,10 +119,10 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }) {
             </svg>
           </div>
           <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-            Join PozosPharma
+            {t("auth.registerTitle")}
           </h2>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Ghana&apos;s trusted AI pharmaceutical community
+            {t("auth.registerSubtitle")}
           </p>
         </div>
 
@@ -159,7 +161,7 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }) {
             htmlFor="register-username"
             className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
           >
-            Username
+            {t("auth.username")}
           </label>
           <input
             id="register-username"
@@ -168,8 +170,8 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }) {
             required
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="Choose a username"
-            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-teal focus:border-transparent transition-shadow"
+            placeholder={t("auth.usernamePlaceholder")}
+            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-warm-100 dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-teal focus:border-transparent transition-shadow"
           />
         </div>
 
@@ -179,7 +181,7 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }) {
             htmlFor="register-email"
             className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
           >
-            Email Address
+            {t("auth.email")}
           </label>
           <input
             id="register-email"
@@ -189,7 +191,7 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
-            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-teal focus:border-transparent transition-shadow"
+            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-warm-100 dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-teal focus:border-transparent transition-shadow"
           />
         </div>
 
@@ -199,7 +201,7 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }) {
             htmlFor="register-password"
             className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
           >
-            Password
+            {t("auth.password")}
           </label>
           <input
             id="register-password"
@@ -208,8 +210,8 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }) {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="At least 8 characters"
-            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-teal focus:border-transparent transition-shadow"
+            placeholder={t("auth.passwordMinLength")}
+            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-warm-100 dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-teal focus:border-transparent transition-shadow"
           />
 
           {/* Password Strength Indicator */}
@@ -226,7 +228,7 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }) {
                 ))}
               </div>
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Strength:{" "}
+                {t("auth.strength")}:{" "}
                 <span
                   className={`font-medium ${
                     strength.score <= 1
@@ -249,7 +251,7 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }) {
             htmlFor="register-confirm-password"
             className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
           >
-            Confirm Password
+            {t("auth.confirmPassword")}
           </label>
           <input
             id="register-confirm-password"
@@ -258,8 +260,8 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }) {
             required
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="Repeat your password"
-            className={`w-full rounded-lg border bg-gray-50 dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-teal focus:border-transparent transition-shadow ${
+            placeholder={t("auth.repeatPassword")}
+            className={`w-full rounded-lg border bg-warm-100 dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-teal focus:border-transparent transition-shadow ${
               confirmPassword && confirmPassword !== password
                 ? "border-red-400 dark:border-red-600"
                 : "border-gray-300 dark:border-gray-600"
@@ -267,7 +269,7 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }) {
           />
           {confirmPassword && confirmPassword !== password && (
             <p className="mt-1 text-xs text-red-500 dark:text-red-400">
-              Passwords do not match
+              {t("auth.passwordsNoMatch")}
             </p>
           )}
         </div>
@@ -280,24 +282,23 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }) {
           loading={loading}
           className="w-full"
         >
-          Create Account
+          {t("auth.createAccount")}
         </Button>
 
         {/* Terms */}
         <p className="text-xs text-center text-gray-400 dark:text-gray-500">
-          By joining, you agree to our Terms of Service and Privacy Policy.
-          Medical information is for educational purposes only.
+          {t("auth.termsNotice")}
         </p>
 
         {/* Switch to Login */}
         <p className="text-center text-sm text-gray-500 dark:text-gray-400">
-          Already have an account?{" "}
+          {t("auth.hasAccount")}{" "}
           <button
             type="button"
             onClick={handleSwitchToLogin}
             className="font-semibold text-brand-teal dark:text-teal-400 hover:underline focus:outline-none focus:ring-2 focus:ring-brand-teal rounded"
           >
-            Sign In
+            {t("auth.signInLink")}
           </button>
         </p>
       </form>

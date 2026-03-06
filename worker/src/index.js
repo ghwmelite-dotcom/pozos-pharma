@@ -3,6 +3,12 @@ import { handleChat } from './routes/chat.js';
 import { handlePharmacist } from './routes/pharmacist.js';
 import { handleDrugs } from './routes/drugs.js';
 import { handleAdmin } from './routes/admin.js';
+import { handleAnalytics } from './routes/analytics.js';
+import { handleReminders } from './routes/reminders.js';
+import { handlePharmacies } from './routes/pharmacies.js';
+import { handleArticles } from './routes/articles.js';
+import { handleVoice } from './routes/voice.js';
+import { handleVision } from './routes/vision.js';
 export { ChatRoom } from './durable-objects/ChatRoom.js';
 
 export default {
@@ -39,6 +45,18 @@ export default {
         response = await handleDrugs(request, env, path);
       } else if (path.startsWith('/api/admin/')) {
         response = await handleAdmin(request, env, path);
+      } else if (path.startsWith('/api/reminders')) {
+        response = await handleReminders(request, env, path);
+      } else if (path.startsWith('/api/pharmacies')) {
+        response = await handlePharmacies(request, env, path);
+      } else if (path.startsWith('/api/articles')) {
+        response = await handleArticles(request, env, path);
+      } else if (path.startsWith('/api/voice/')) {
+        response = await handleVoice(request, env, path);
+      } else if (path.startsWith('/api/vision/')) {
+        response = await handleVision(request, env, path);
+      } else if (path.startsWith('/api/analytics/')) {
+        response = await handleAnalytics(request, env, path);
       }
     } catch (err) {
       console.error('Route error:', err);

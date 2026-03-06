@@ -19,14 +19,28 @@ export default {
           star: '#000000'
         },
         surface: {
-          light: '#F8FAFC',
+          light: '#F5F2EB',
           dark: '#0F172A',
-          card: '#FFFFFF',
+          card: '#FDFBF7',
           'card-dark': '#1E293B'
+        },
+        warm: {
+          50: '#FAF8F3',
+          100: '#F5F2EB',
+          200: '#EBE6DA',
+          300: '#DDD6C5',
+          400: '#C4B899',
+          500: '#A89A76',
+          600: '#8B7D5E',
+          700: '#6E6349',
+          800: '#524A37',
+          900: '#383225',
         }
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
+        display: ['Instrument Serif', 'Georgia', 'serif'],
+        body: ['Outfit', 'Inter', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace']
       },
       backgroundImage: {

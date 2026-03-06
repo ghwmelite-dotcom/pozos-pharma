@@ -26,7 +26,10 @@ CREATE TABLE IF NOT EXISTS pharmacists (
   total_sessions INTEGER DEFAULT 0,
   verified_at INTEGER,
   badge_level TEXT DEFAULT 'green',
-  license_doc_key TEXT
+  license_doc_key TEXT,
+  tier TEXT DEFAULT 'standard',
+  composite_score REAL DEFAULT 0,
+  response_time_avg REAL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS sessions (
@@ -111,6 +114,7 @@ CREATE INDEX IF NOT EXISTS idx_sessions_status ON sessions(status);
 CREATE INDEX IF NOT EXISTS idx_handoff_queue_claimed ON handoff_queue(claimed_by);
 CREATE INDEX IF NOT EXISTS idx_drugs_generic ON drugs(generic_name);
 CREATE INDEX IF NOT EXISTS idx_pharmacists_verified ON pharmacists(is_verified);
+CREATE INDEX IF NOT EXISTS idx_pharmacists_score ON pharmacists(composite_score);
 
 -- Seed community rooms
 INSERT OR IGNORE INTO rooms VALUES

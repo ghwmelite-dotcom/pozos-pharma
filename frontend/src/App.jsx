@@ -35,6 +35,7 @@ const DrugCalcTrainer = lazy(() => import("./pages/DrugCalcTrainer"));
 const CompoundingLab = lazy(() => import("./pages/CompoundingLab"));
 const QuizEngine = lazy(() => import("./pages/QuizEngine"));
 const Flashcards = lazy(() => import("./pages/Flashcards"));
+const AITutor = lazy(() => import("./pages/AITutor"));
 
 function LoadingFallback() {
   return (
@@ -238,6 +239,7 @@ function Navbar() {
             <NavLink to="/" end className={navLinkClass}>{t("nav.home")}</NavLink>
             <NavLink to="/drugs" className={navLinkClass}>{t("nav.drugs")}</NavLink>
             <NavLink to="/learn" className={navLinkClass}>Academy</NavLink>
+            <NavLink to="/ai-tutor" className={navLinkClass}>AI Tutor</NavLink>
             <MoreDropdown items={exploreItems} label="Explore" />
             <MoreDropdown items={toolsItems} label="Tools" />
             {user && <NavLink to="/chat/general" className={navLinkClass}>{t("nav.chat")}</NavLink>}
@@ -305,6 +307,7 @@ function Navbar() {
               <NavLink to="/" end className={mobileNavClass} onClick={() => setMobileOpen(false)}>{t("nav.home")}</NavLink>
               <NavLink to="/drugs" className={mobileNavClass} onClick={() => setMobileOpen(false)}>{t("nav.drugs")}</NavLink>
               <NavLink to="/learn" className={mobileNavClass} onClick={() => setMobileOpen(false)}>Academy</NavLink>
+              <NavLink to="/ai-tutor" className={mobileNavClass} onClick={() => setMobileOpen(false)}>AI Tutor</NavLink>
               {user && <NavLink to="/chat/general" className={mobileNavClass} onClick={() => setMobileOpen(false)}>{t("nav.chat")}</NavLink>}
             </div>
             <div className="border-t border-warm-200 dark:border-gray-800 my-1.5" />
@@ -396,6 +399,7 @@ export default function App() {
             <Route path="/learn/compounding" element={<CompoundingLab />} />
             <Route path="/learn/quiz" element={<QuizEngine />} />
             <Route path="/learn/flashcards" element={<Flashcards />} />
+            <Route path="/ai-tutor" element={<AITutor />} />
             <Route path="/verify-email/:token" element={<VerifyEmail />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
           </Routes>

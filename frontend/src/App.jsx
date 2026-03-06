@@ -354,7 +354,27 @@ function Navbar() {
             <LearnHub />
             <MoreDropdown items={exploreItems} label="Explore" />
             <MoreDropdown items={toolsItems} label="Tools" />
-            {user && <NavLink to="/chat/general" className={navLinkClass}>{t("nav.chat")}</NavLink>}
+            {user && (
+              <NavLink
+                to="/chat/general"
+                className={({ isActive }) =>
+                  `relative flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-body font-medium transition-all ${
+                    isActive
+                      ? "bg-emerald-500/10 text-emerald-500 dark:bg-emerald-500/15 dark:text-emerald-400"
+                      : "text-gray-600 hover:text-emerald-500 hover:bg-emerald-500/5 dark:text-gray-400 dark:hover:text-emerald-400 dark:hover:bg-emerald-500/10"
+                  }`
+                }
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" />
+                </svg>
+                Community
+                <span className="flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+              </NavLink>
+            )}
             {user?.role === "pharmacist" && <NavLink to="/pharmacist-portal" className={navLinkClass}>{t("nav.pharmacist")}</NavLink>}
           </div>
 
@@ -418,7 +438,28 @@ function Navbar() {
             <div className="py-2 space-y-0.5">
               <NavLink to="/" end className={mobileNavClass} onClick={() => setMobileOpen(false)}>{t("nav.home")}</NavLink>
               <NavLink to="/drugs" className={mobileNavClass} onClick={() => setMobileOpen(false)}>{t("nav.drugs")}</NavLink>
-              {user && <NavLink to="/chat/general" className={mobileNavClass} onClick={() => setMobileOpen(false)}>{t("nav.chat")}</NavLink>}
+              {user && (
+                <NavLink
+                  to="/chat/general"
+                  onClick={() => setMobileOpen(false)}
+                  className={({ isActive }) =>
+                    `flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-body font-medium transition-all ${
+                      isActive
+                        ? "bg-emerald-500/10 text-emerald-500 dark:bg-emerald-500/15 dark:text-emerald-400"
+                        : "text-gray-600 hover:text-emerald-500 hover:bg-emerald-500/5 dark:text-gray-400 dark:hover:text-emerald-400"
+                    }`
+                  }
+                >
+                  <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" />
+                  </svg>
+                  Community Chat
+                  <span className="flex h-2 w-2 ml-auto">
+                    <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                </NavLink>
+              )}
             </div>
             <div className="mx-3 my-2 p-2.5 rounded-xl bg-gradient-to-r from-[#C9A84C]/5 to-[#C9A84C]/10 dark:from-[#C9A84C]/10 dark:to-[#C9A84C]/15 border border-[#C9A84C]/15">
               <p className="px-1 pb-2 text-[10px] font-body font-bold text-[#C9A84C]/70 uppercase tracking-[0.2em] flex items-center gap-1.5">

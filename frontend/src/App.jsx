@@ -4,7 +4,6 @@ import useChatStore from "./store/chatStore";
 import { useTranslation } from "./i18n/useTranslation";
 import InstallPrompt from "./components/UI/InstallPrompt";
 import NotificationBell from "./components/UI/NotificationBell";
-import EmailVerificationBanner from "./components/Auth/EmailVerificationBanner";
 import { usePageView } from "./hooks/useAnalytics";
 import { useNotifications } from "./hooks/useNotifications";
 
@@ -369,7 +368,6 @@ export default function App() {
   return (
     <div className="min-h-screen bg-warm-100 dark:bg-gray-950 text-warm-900 dark:text-gray-100 transition-colors font-body">
       <Navbar />
-      <EmailVerificationBanner />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <Suspense fallback={<LoadingFallback />}>
           <Routes>

@@ -1,5 +1,5 @@
 import { signJWT, hashPassword, verifyPassword } from '../middleware/auth.js';
-import { sendVerificationEmail, sendPasswordResetEmail } from '../email/sendEmail.js';
+import { sendPasswordResetEmail } from '../email/sendEmail.js';
 
 // Run schema migration on first call (idempotent)
 let migrated = false;
@@ -33,17 +33,11 @@ export async function handleAuth(request, env, path) {
   if (path === '/api/auth/me' && request.method === 'GET') {
     return getMe(request, env);
   }
-  if (path === '/api/auth/verify-email' && request.method === 'POST') {
-    return verifyEmail(request, env);
-  }
   if (path === '/api/auth/forgot-password' && request.method === 'POST') {
     return forgotPassword(request, env);
   }
   if (path === '/api/auth/reset-password' && request.method === 'POST') {
     return resetPassword(request, env);
-  }
-  if (path === '/api/auth/resend-verification' && request.method === 'POST') {
-    return resendVerification(request, env);
   }
   return null;
 }
@@ -72,21 +66,15 @@ async function register(request, env) {
 
   const id = crypto.randomUUID();
   const passwordHash = await hashPassword(password);
-  const verificationToken = crypto.randomUUID();
 
   await env.DB.prepare(
-    'INSERT INTO users (id, username, email, password_hash, email_verified, verification_token) VALUES (?, ?, ?, ?, 0, ?)'
-  ).bind(id, username, email, passwordHash, verificationToken).run();
-
-  // Send verification email (non-blocking)
-  sendVerificationEmail(email, verificationToken, env).catch((err) =>
-    console.error('[auth] Failed to send verification email:', err)
-  );
+    'INSERT INTO users (id, username, email, password_hash, email_verified) VALUES (?, ?, ?, ?, 1)'
+  ).bind(id, username, email, passwordHash).run();
 
   const token = await signJWT({ userId: id, username, role: 'user' }, env.JWT_SECRET);
   await env.KV.put(`session:${id}`, token, { expirationTtl: 7 * 24 * 3600 });
 
-  return json({ token, user: { id, username, email, role: 'user', email_verified: 0 } });
+  return json({ token, user: { id, username, email, role: 'user', email_verified: 1 } });
 }
 
 async function login(request, env) {
@@ -152,28 +140,6 @@ async function getMe(request, env) {
   return json({ user, pharmacist });
 }
 
-async function verifyEmail(request, env) {
-  const { token } = await request.json();
-
-  if (!token) {
-    return json({ error: 'Verification token is required' }, 400);
-  }
-
-  const user = await env.DB.prepare(
-    'SELECT id, email FROM users WHERE verification_token = ?'
-  ).bind(token).first();
-
-  if (!user) {
-    return json({ error: 'Invalid or expired verification token' }, 400);
-  }
-
-  await env.DB.prepare(
-    'UPDATE users SET email_verified = 1, verification_token = NULL WHERE id = ?'
-  ).bind(user.id).run();
-
-  return json({ message: 'Email verified successfully' });
-}
-
 async function forgotPassword(request, env) {
   const { email } = await request.json();
 
@@ -235,38 +201,6 @@ async function resetPassword(request, env) {
   ).bind(passwordHash, user.id).run();
 
   return json({ message: 'Password has been reset successfully' });
-}
-
-async function resendVerification(request, env) {
-  const { authMiddleware } = await import('../middleware/auth.js');
-  const payload = await authMiddleware(request, env);
-  if (!payload) return json({ error: 'Unauthorized' }, 401);
-
-  const user = await env.DB.prepare(
-    'SELECT id, email, email_verified, verification_token FROM users WHERE id = ?'
-  ).bind(payload.userId).first();
-
-  if (!user) return json({ error: 'User not found' }, 404);
-
-  if (user.email_verified === 1) {
-    return json({ message: 'Email is already verified' });
-  }
-
-  // Generate new token if needed
-  let verificationToken = user.verification_token;
-  if (!verificationToken) {
-    verificationToken = crypto.randomUUID();
-    await env.DB.prepare(
-      'UPDATE users SET verification_token = ? WHERE id = ?'
-    ).bind(verificationToken, user.id).run();
-  }
-
-  // Send verification email (non-blocking)
-  sendVerificationEmail(user.email, verificationToken, env).catch((err) =>
-    console.error('[auth] Failed to resend verification email:', err)
-  );
-
-  return json({ message: 'Verification email has been resent' });
 }
 
 function json(data, status = 200) {

@@ -9,6 +9,7 @@ import { handlePharmacies } from './routes/pharmacies.js';
 import { handleArticles } from './routes/articles.js';
 import { handleVoice } from './routes/voice.js';
 import { handleVision } from './routes/vision.js';
+import { handleTutor } from './routes/tutor.js';
 export { ChatRoom } from './durable-objects/ChatRoom.js';
 
 export default {
@@ -57,6 +58,8 @@ export default {
         response = await handleVision(request, env, path);
       } else if (path.startsWith('/api/analytics/')) {
         response = await handleAnalytics(request, env, path);
+      } else if (path.startsWith('/api/tutor/')) {
+        response = await handleTutor(request, env, path);
       }
     } catch (err) {
       console.error('Route error:', err);

@@ -152,6 +152,120 @@ function MoreDropdown({ items, label }) {
   );
 }
 
+function LearnHub() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const items = [
+    {
+      to: "/learn",
+      title: "Academy",
+      desc: "Courses, quizzes & certificates",
+      icon: (
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342" />
+        </svg>
+      ),
+      badge: null,
+    },
+    {
+      to: "/ai-tutor",
+      title: "AI Tutor",
+      desc: "Ask anything pharmacy",
+      icon: (
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
+        </svg>
+      ),
+      badge: "NEW",
+    },
+  ];
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen(!open)}
+        className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-body font-semibold transition-all border ${
+          open
+            ? "bg-[#C9A84C]/15 text-[#C9A84C] border-[#C9A84C]/40 dark:bg-[#C9A84C]/20 dark:text-[#E8D48B]"
+            : "bg-gradient-to-r from-[#C9A84C]/5 to-[#C9A84C]/10 text-[#C9A84C] border-[#C9A84C]/20 hover:border-[#C9A84C]/40 hover:bg-[#C9A84C]/15 dark:from-[#C9A84C]/10 dark:to-[#C9A84C]/15 dark:text-[#E8D48B] dark:hover:bg-[#C9A84C]/20"
+        }`}
+      >
+        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+        </svg>
+        Learn
+        <svg className={`w-3.5 h-3.5 transition-transform ${open ? "rotate-180" : ""}`} viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+        </svg>
+      </button>
+      {open && (
+        <div className="absolute left-1/2 -translate-x-1/2 mt-3 w-[340px] bg-warm-50 dark:bg-gray-900 border border-[#C9A84C]/20 dark:border-[#C9A84C]/15 rounded-2xl shadow-2xl shadow-[#C9A84C]/10 dark:shadow-black/40 p-2 z-50">
+          <div className="px-3 pt-2 pb-2.5">
+            <p className="text-[10px] font-body font-bold text-[#C9A84C]/60 uppercase tracking-[0.2em]">Learn & Grow</p>
+          </div>
+          <div className="space-y-1">
+            {items.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                onClick={() => setOpen(false)}
+                className={({ isActive }) =>
+                  `flex items-start gap-3.5 px-3.5 py-3.5 rounded-xl transition-all group ${
+                    isActive
+                      ? "bg-[#C9A84C]/10 dark:bg-[#C9A84C]/15"
+                      : "hover:bg-[#C9A84C]/5 dark:hover:bg-[#C9A84C]/10"
+                  }`
+                }
+              >
+                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-[#C9A84C]/20 to-[#A8893A]/10 border border-[#C9A84C]/20 flex items-center justify-center text-[#C9A84C] group-hover:border-[#C9A84C]/40 transition-colors">
+                  {item.icon}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-display font-bold text-warm-900 dark:text-warm-100 group-hover:text-[#C9A84C] transition-colors">
+                      {item.title}
+                    </span>
+                    {item.badge && (
+                      <span className="px-1.5 py-0.5 text-[9px] font-body font-bold bg-[#C9A84C] text-gray-950 rounded-md leading-none">
+                        {item.badge}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs font-body text-warm-500 dark:text-warm-400 mt-0.5">{item.desc}</p>
+                </div>
+                <svg className="w-4 h-4 text-warm-400 dark:text-warm-500 mt-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </NavLink>
+            ))}
+          </div>
+          <div className="mt-1.5 pt-2 px-3 pb-1 border-t border-warm-200/50 dark:border-gray-700/50">
+            <NavLink
+              to="/learn/quiz"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2 text-xs font-body text-warm-500 dark:text-warm-400 hover:text-[#C9A84C] transition-colors"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
+              </svg>
+              Quick Quiz &middot; Flashcards &middot; Drug Calc Trainer
+            </NavLink>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Navbar() {
   const { user, logout, darkMode, toggleDarkMode } = useChatStore();
   const { t } = useTranslation();
@@ -237,8 +351,7 @@ function Navbar() {
           <div className="hidden md:flex items-center gap-0.5">
             <NavLink to="/" end className={navLinkClass}>{t("nav.home")}</NavLink>
             <NavLink to="/drugs" className={navLinkClass}>{t("nav.drugs")}</NavLink>
-            <NavLink to="/learn" className={navLinkClass}>Academy</NavLink>
-            <NavLink to="/ai-tutor" className={navLinkClass}>AI Tutor</NavLink>
+            <LearnHub />
             <MoreDropdown items={exploreItems} label="Explore" />
             <MoreDropdown items={toolsItems} label="Tools" />
             {user && <NavLink to="/chat/general" className={navLinkClass}>{t("nav.chat")}</NavLink>}
@@ -305,9 +418,26 @@ function Navbar() {
             <div className="py-2 space-y-0.5">
               <NavLink to="/" end className={mobileNavClass} onClick={() => setMobileOpen(false)}>{t("nav.home")}</NavLink>
               <NavLink to="/drugs" className={mobileNavClass} onClick={() => setMobileOpen(false)}>{t("nav.drugs")}</NavLink>
-              <NavLink to="/learn" className={mobileNavClass} onClick={() => setMobileOpen(false)}>Academy</NavLink>
-              <NavLink to="/ai-tutor" className={mobileNavClass} onClick={() => setMobileOpen(false)}>AI Tutor</NavLink>
               {user && <NavLink to="/chat/general" className={mobileNavClass} onClick={() => setMobileOpen(false)}>{t("nav.chat")}</NavLink>}
+            </div>
+            <div className="mx-3 my-2 p-2.5 rounded-xl bg-gradient-to-r from-[#C9A84C]/5 to-[#C9A84C]/10 dark:from-[#C9A84C]/10 dark:to-[#C9A84C]/15 border border-[#C9A84C]/15">
+              <p className="px-1 pb-2 text-[10px] font-body font-bold text-[#C9A84C]/70 uppercase tracking-[0.2em] flex items-center gap-1.5">
+                <svg className="w-3 h-3 text-[#C9A84C]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+                Learn
+              </p>
+              <NavLink to="/learn" className={mobileNavClass} onClick={() => setMobileOpen(false)}>Academy</NavLink>
+              <NavLink to="/ai-tutor" onClick={() => setMobileOpen(false)}
+                className={({ isActive }) =>
+                  `flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-body font-medium transition-all ${
+                    isActive
+                      ? "bg-[#C9A84C]/10 text-[#C9A84C] dark:bg-[#C9A84C]/15 dark:text-[#E8D48B]"
+                      : "text-gray-600 hover:text-[#C9A84C] hover:bg-[#C9A84C]/5 dark:text-gray-400 dark:hover:text-[#C9A84C]"
+                  }`
+                }
+              >
+                AI Tutor
+                <span className="px-1.5 py-0.5 text-[9px] font-bold bg-[#C9A84C] text-gray-950 rounded-md leading-none">NEW</span>
+              </NavLink>
             </div>
             <div className="border-t border-warm-200 dark:border-gray-800 my-1.5" />
             <p className="px-3 py-1.5 text-[10px] font-body font-semibold text-[#C9A84C]/60 uppercase tracking-[0.2em]">Explore</p>

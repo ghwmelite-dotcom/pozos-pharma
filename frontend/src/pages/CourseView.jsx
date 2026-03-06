@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 
 const COURSES = {
@@ -3832,6 +3832,163 @@ const IconAward = () => (
   </svg>
 );
 
+const IconFlame = () => (
+  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M12 23c-3.6 0-8-2.4-8-7.7 0-4 3.1-7.2 5.3-9.4.4-.4 1-.1 1 .5.1 2.2.8 4.1 2.2 5.6.1-.5.2-1 .3-1.5.5-2 1.5-4.2 3.2-6.1.4-.4 1-.2 1.1.4.3 1.5.5 3.1.5 4.6 0 1.8-.5 3.5-1.3 5 .6-.3 1.2-.8 1.6-1.4.3-.4.9-.4 1.1.1C20 15 20 16.6 20 17.5 20 20.6 15.6 23 12 23z"/>
+  </svg>
+);
+
+const IconZap = () => (
+  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+  </svg>
+);
+
+/* ---- INTERACTIVITY: Animation CSS ---- */
+const INTERACTIVE_STYLES = `
+@keyframes confetti-fall {
+  0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+@keyframes correct-pulse {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(74,222,128,0.4); }
+  50% { transform: scale(1.02); box-shadow: 0 0 20px 4px rgba(74,222,128,0.2); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(74,222,128,0); }
+}
+@keyframes milestone-pop {
+  0% { transform: scale(0.5) translateY(20px); opacity: 0; }
+  60% { transform: scale(1.05) translateY(-5px); opacity: 1; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+@keyframes xp-float {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-60px); opacity: 0; }
+}
+@keyframes milestone-exit {
+  0% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-30px); }
+}
+.animate-shake { animation: shake 0.5s ease-in-out; }
+.animate-correct-pulse { animation: correct-pulse 0.5s ease-in-out; }
+.animate-milestone-pop { animation: milestone-pop 0.5s ease-out forwards; }
+.animate-xp-float { animation: xp-float 1.2s ease-out forwards; }
+`;
+
+/* ---- INTERACTIVITY: XP & Level System ---- */
+const XP_PER_LESSON = 50;
+const XP_PER_QUIZ_CORRECT = 30;
+const XP_PER_PERFECT_QUIZ = 100;
+const LEVELS = [
+  { name: "Novice", minXP: 0, color: "#94a3b8" },
+  { name: "Apprentice", minXP: 200, color: "#60a5fa" },
+  { name: "Scholar", minXP: 500, color: "#a78bfa" },
+  { name: "Expert", minXP: 1000, color: "#C9A84C" },
+  { name: "Master", minXP: 2000, color: "#f97316" },
+  { name: "Grand Master", minXP: 5000, color: "#ef4444" },
+];
+
+function getLevel(xp) {
+  for (let i = LEVELS.length - 1; i >= 0; i--) {
+    if (xp >= LEVELS[i].minXP) return { ...LEVELS[i], index: i };
+  }
+  return { ...LEVELS[0], index: 0 };
+}
+
+function getNextLevel(xp) {
+  const current = getLevel(xp);
+  if (current.index < LEVELS.length - 1) return LEVELS[current.index + 1];
+  return null;
+}
+
+function getLevelProgress(xp) {
+  const current = getLevel(xp);
+  const next = getNextLevel(xp);
+  if (!next) return 100;
+  return Math.round(((xp - current.minXP) / (next.minXP - current.minXP)) * 100);
+}
+
+/* ---- INTERACTIVITY: Streak System ---- */
+function getStreakData() {
+  try {
+    const data = JSON.parse(localStorage.getItem("pozos-streak") || "{}");
+    const today = new Date().toDateString();
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    if (data.lastDate === today) return { count: data.count || 1, active: true };
+    if (data.lastDate === yesterday) return { count: data.count || 1, active: false };
+    return { count: 0, active: false };
+  } catch {
+    return { count: 0, active: false };
+  }
+}
+
+function updateStreak() {
+  const today = new Date().toDateString();
+  try {
+    const data = JSON.parse(localStorage.getItem("pozos-streak") || "{}");
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    if (data.lastDate === today) return data.count;
+    const newCount = data.lastDate === yesterday ? (data.count || 0) + 1 : 1;
+    localStorage.setItem("pozos-streak", JSON.stringify({ lastDate: today, count: newCount }));
+    return newCount;
+  } catch {
+    return 1;
+  }
+}
+
+/* ---- INTERACTIVITY: Overlay Components ---- */
+function ConfettiOverlay({ show }) {
+  if (!show) return null;
+  const colors = ["#C9A84C", "#E8D48B", "#A8893A", "#FFD700", "#FFA500", "#4CAF50", "#2196F3", "#9C27B0"];
+  return (
+    <div className="fixed inset-0 pointer-events-none z-[90] overflow-hidden">
+      {Array.from({ length: 60 }).map((_, i) => (
+        <div
+          key={i}
+          style={{
+            position: "absolute",
+            left: `${Math.random() * 100}%`,
+            top: "-10px",
+            width: `${6 + Math.random() * 8}px`,
+            height: `${6 + Math.random() * 8}px`,
+            backgroundColor: colors[i % colors.length],
+            borderRadius: Math.random() > 0.5 ? "50%" : "2px",
+            animation: `confetti-fall ${1.5 + Math.random() * 2}s ease-in ${Math.random() * 0.5}s forwards`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function MilestoneBanner({ message }) {
+  return (
+    <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[80] animate-milestone-pop">
+      <div className="px-8 py-4 rounded-2xl bg-gradient-to-r from-[#A8893A] via-[#C9A84C] to-[#E8D48B] text-gray-950 font-display font-bold text-lg shadow-2xl shadow-[#C9A84C]/30 flex items-center gap-3">
+        <IconStar />
+        {message}
+        <IconStar />
+      </div>
+    </div>
+  );
+}
+
+function XPPopup({ amount }) {
+  return (
+    <div className="fixed top-20 right-8 z-[80] animate-xp-float pointer-events-none">
+      <div className="px-5 py-3 rounded-xl bg-[#C9A84C] text-gray-950 font-display font-bold text-xl shadow-lg shadow-[#C9A84C]/40">
+        +{amount} XP
+      </div>
+    </div>
+  );
+}
+
 /* ------------------------------------------------------------------ */
 /*  CERTIFICATE COMPONENT                                              */
 /* ------------------------------------------------------------------ */
@@ -3990,10 +4147,28 @@ export default function CourseView() {
   const [showCertificate, setShowCertificate] = useState(false);
   const [studentNameInput, setStudentNameInput] = useState("");
 
+  // Interactivity state
+  const [xp, setXp] = useState(() => {
+    try { return parseInt(localStorage.getItem("pozos-xp") || "0", 10); } catch { return 0; }
+  });
+  const [streak, setStreak] = useState(() => getStreakData().count);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [milestoneMsg, setMilestoneMsg] = useState(null);
+  const [flippedCards, setFlippedCards] = useState(new Set());
+  const [answerAnims, setAnswerAnims] = useState({});
+  const [xpPopup, setXpPopup] = useState(null);
+
+  // Persist XP
+  useEffect(() => {
+    localStorage.setItem("pozos-xp", xp.toString());
+  }, [xp]);
+
   useEffect(() => {
     setQuizAnswers({});
     setQuizSubmitted(false);
     setQuizScore(null);
+    setAnswerAnims({});
+    setFlippedCards(new Set());
   }, [currentLessonIdx]);
 
   /* ---- Course not found ---- */
@@ -4029,11 +4204,40 @@ export default function CourseView() {
   };
 
   const handleMarkComplete = () => {
-    setCompletedLessons((prev) => {
-      const next = new Set(prev);
-      next.add(currentLessonIdx);
-      return next;
-    });
+    if (completedLessons.has(currentLessonIdx)) return;
+    const newCompleted = new Set(completedLessons);
+    newCompleted.add(currentLessonIdx);
+    setCompletedLessons(newCompleted);
+
+    // Award XP
+    setXp((prev) => prev + XP_PER_LESSON);
+    setXpPopup({ amount: XP_PER_LESSON, key: Date.now() });
+    setTimeout(() => setXpPopup(null), 1300);
+
+    // Update streak
+    setStreak(updateStreak());
+
+    // Check milestones
+    const newProgress = Math.round((newCompleted.size / lessons.length) * 100);
+    const oldProgress = Math.round((completedLessons.size / lessons.length) * 100);
+    const milestones = [25, 50, 75, 100];
+    for (const m of milestones) {
+      if (newProgress >= m && oldProgress < m) {
+        const msgs = {
+          25: "Quarter way there! Keep pushing!",
+          50: "Halfway champion! You're crushing it!",
+          75: "Almost done! The finish line is near!",
+          100: "Course Complete! You're amazing!",
+        };
+        setMilestoneMsg(msgs[m]);
+        setTimeout(() => setMilestoneMsg(null), 3500);
+        if (m >= 50) {
+          setShowConfetti(true);
+          setTimeout(() => setShowConfetti(false), 3000);
+        }
+        break;
+      }
+    }
   };
 
   const handleQuizAnswer = (qIdx, optIdx) => {
@@ -4044,15 +4248,43 @@ export default function CourseView() {
   const handleQuizSubmit = () => {
     if (Object.keys(quizAnswers).length < currentLesson.quiz.length) return;
     let score = 0;
+    const anims = {};
     currentLesson.quiz.forEach((q, i) => {
-      if (quizAnswers[i] === q.correctIndex) score++;
+      if (quizAnswers[i] === q.correctIndex) {
+        score++;
+        anims[i] = "correct";
+      } else {
+        anims[i] = "wrong";
+      }
     });
+    setAnswerAnims(anims);
+    setTimeout(() => setAnswerAnims({}), 600);
+
     setQuizScore(score);
     setQuizSubmitted(true);
     setLessonQuizScores((prev) => ({
       ...prev,
       [currentLessonIdx]: Math.round((score / currentLesson.quiz.length) * 100),
     }));
+
+    // Award XP for correct answers + bonus for perfect
+    const earnedXP =
+      score * XP_PER_QUIZ_CORRECT +
+      (score === currentLesson.quiz.length ? XP_PER_PERFECT_QUIZ : 0);
+    if (earnedXP > 0) {
+      setXp((prev) => prev + earnedXP);
+      setXpPopup({ amount: earnedXP, key: Date.now() });
+      setTimeout(() => setXpPopup(null), 1300);
+    }
+
+    // Confetti on pass (>= 50%)
+    if (score >= Math.ceil(currentLesson.quiz.length / 2)) {
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 3000);
+    }
+
+    // Update streak
+    setStreak(updateStreak());
   };
 
   const handleNotesChange = (value) => {
@@ -4072,6 +4304,11 @@ export default function CourseView() {
   /* ---------------------------------------------------------------- */
   return (
     <div className="min-h-screen bg-warm-50 dark:bg-gray-950 font-body text-warm-900 dark:text-warm-100">
+      <style>{INTERACTIVE_STYLES}</style>
+      <ConfettiOverlay show={showConfetti} />
+      {milestoneMsg && <MilestoneBanner message={milestoneMsg} />}
+      {xpPopup && <XPPopup amount={xpPopup.amount} key={xpPopup.key} />}
+
       {/* ---- Breadcrumb ---- */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2">
         <nav className="flex items-center gap-2 text-sm text-warm-500 dark:text-warm-400">
@@ -4109,19 +4346,57 @@ export default function CourseView() {
                 {completedLessons.size}/{lessons.length} completed
               </span>
             </span>
+            <span className="flex items-center gap-1.5">
+              <IconZap />
+              <span className="text-[#C9A84C] font-semibold">{xp} XP</span>
+              <span
+                className="px-2 py-0.5 rounded-full text-xs font-bold"
+                style={{ backgroundColor: getLevel(xp).color + "22", color: getLevel(xp).color }}
+              >
+                {getLevel(xp).name}
+              </span>
+            </span>
+            {streak > 0 && (
+              <span className="flex items-center gap-1.5 text-orange-400">
+                <IconFlame />
+                <span className="font-semibold">{streak} day streak</span>
+              </span>
+            )}
           </div>
 
           {/* Progress bar */}
-          <div className="w-full max-w-md">
-            <div className="flex justify-between text-xs mb-1 text-warm-500 dark:text-warm-400">
-              <span>Progress</span>
-              <span>{progress}%</span>
+          <div className="w-full max-w-md space-y-3">
+            <div>
+              <div className="flex justify-between text-xs mb-1 text-warm-500 dark:text-warm-400">
+                <span>Progress</span>
+                <span>{progress}%</span>
+              </div>
+              <div className="w-full h-2.5 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-[#A8893A] via-[#C9A84C] to-[#E8D48B] transition-all duration-500"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
             </div>
-            <div className="w-full h-2.5 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-[#A8893A] via-[#C9A84C] to-[#E8D48B] transition-all duration-500"
-                style={{ width: `${progress}%` }}
-              />
+            {/* XP Level bar */}
+            <div>
+              <div className="flex justify-between text-xs mb-1 text-warm-500 dark:text-warm-400">
+                <span style={{ color: getLevel(xp).color }}>{getLevel(xp).name}</span>
+                <span>
+                  {getNextLevel(xp)
+                    ? `${xp - getLevel(xp).minXP} / ${getNextLevel(xp).minXP - getLevel(xp).minXP} XP to ${getNextLevel(xp).name}`
+                    : "Max Level"}
+                </span>
+              </div>
+              <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{
+                    width: `${getLevelProgress(xp)}%`,
+                    backgroundColor: getLevel(xp).color,
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -4246,19 +4521,75 @@ export default function CourseView() {
               </div>
             </div>
 
-            {/* Key Points panel */}
+            {/* Key Concepts - Interactive Flip Cards */}
             <div className="gold-glass rounded-2xl border-2 border-[#C9A84C]/30 p-6 sm:p-8 mb-8">
               <h3 className="flex items-center gap-2 text-lg font-display font-bold gold-text mb-4">
-                <IconStar /> Key Points
+                <IconStar /> Key Concepts
+                <span className="text-sm font-normal text-warm-500 ml-1">(tap to reveal)</span>
               </h3>
-              <ul className="space-y-3">
-                {currentLesson.keyPoints.map((point, i) => (
-                  <li key={i} className="flex items-start gap-3 text-warm-700 dark:text-warm-300">
-                    <span className="mt-1.5 w-2 h-2 rounded-full bg-[#C9A84C] flex-shrink-0" />
-                    <span>{point}</span>
-                  </li>
-                ))}
-              </ul>
+              <div className="grid sm:grid-cols-2 gap-4">
+                {currentLesson.keyPoints.map((point, i) => {
+                  const isFlipped = flippedCards.has(i);
+                  return (
+                    <button
+                      key={i}
+                      onClick={() =>
+                        setFlippedCards((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(i)) next.delete(i);
+                          else next.add(i);
+                          return next;
+                        })
+                      }
+                      className="relative h-36 w-full cursor-pointer group text-left"
+                      style={{ perspective: "1000px" }}
+                    >
+                      <div
+                        className="relative w-full h-full transition-transform duration-500"
+                        style={{
+                          transformStyle: "preserve-3d",
+                          transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
+                        }}
+                      >
+                        {/* Front */}
+                        <div
+                          className="absolute inset-0 rounded-xl bg-gradient-to-br from-[#C9A84C]/20 to-[#A8893A]/10 border border-[#C9A84C]/30 flex flex-col items-center justify-center p-4 group-hover:border-[#C9A84C]/60 transition-colors"
+                          style={{ backfaceVisibility: "hidden" }}
+                        >
+                          <span className="text-3xl font-display font-bold text-[#C9A84C] mb-1">
+                            #{i + 1}
+                          </span>
+                          <p className="text-xs text-warm-500">Tap to reveal</p>
+                        </div>
+                        {/* Back */}
+                        <div
+                          className="absolute inset-0 rounded-xl bg-gradient-to-br from-[#C9A84C]/15 to-transparent border border-[#C9A84C]/40 flex items-center justify-center p-5"
+                          style={{
+                            backfaceVisibility: "hidden",
+                            transform: "rotateY(180deg)",
+                          }}
+                        >
+                          <p className="text-sm text-warm-700 dark:text-warm-200 text-center leading-relaxed">
+                            {point}
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+              {flippedCards.size < currentLesson.keyPoints.length && (
+                <button
+                  onClick={() =>
+                    setFlippedCards(
+                      new Set(currentLesson.keyPoints.map((_, i) => i))
+                    )
+                  }
+                  className="mt-4 text-sm text-[#C9A84C] hover:text-[#E8D48B] transition-colors"
+                >
+                  Reveal all
+                </button>
+              )}
             </div>
 
             {/* Quiz section */}
@@ -4266,7 +4597,16 @@ export default function CourseView() {
               <h3 className="text-lg font-display font-bold gold-text mb-6">Lesson Quiz</h3>
               <div className="space-y-8">
                 {currentLesson.quiz.map((q, qIdx) => (
-                  <div key={qIdx}>
+                  <div
+                    key={qIdx}
+                    className={
+                      answerAnims[qIdx] === "correct"
+                        ? "animate-correct-pulse"
+                        : answerAnims[qIdx] === "wrong"
+                        ? "animate-shake"
+                        : ""
+                    }
+                  >
                     <p className="font-medium text-warm-800 dark:text-warm-200 mb-3">
                       <span className="text-[#C9A84C] mr-2">Q{qIdx + 1}.</span>
                       {q.question}

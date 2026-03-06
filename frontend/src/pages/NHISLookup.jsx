@@ -1,113 +1,11 @@
 import { useState } from "react";
 import { useTranslation } from "../i18n/useTranslation";
 
-const NHIS_FORMULARY = [
-  {
-    id: 1,
-    name: "Metformin 500mg",
-    genericName: "Metformin Hydrochloride",
-    category: "A",
-    coverage: "full",
-    copay: 0,
-    conditions: ["Type 2 Diabetes Mellitus"],
-    drugClass: "Biguanides (Antidiabetic)",
-    notes: "First-line therapy for type 2 diabetes. No copay required under NHIS.",
-  },
-  {
-    id: 2,
-    name: "Amlodipine 5mg",
-    genericName: "Amlodipine Besylate",
-    category: "A",
-    coverage: "full",
-    copay: 0,
-    conditions: ["Hypertension", "Angina Pectoris"],
-    drugClass: "Calcium Channel Blockers",
-    notes: "Essential antihypertensive. Fully covered for registered NHIS members.",
-  },
-  {
-    id: 3,
-    name: "Insulin Glargine",
-    genericName: "Insulin Glargine (rDNA origin)",
-    category: "B",
-    coverage: "partial",
-    coveragePercent: 60,
-    outOfPocket: 45.0,
-    retailPrice: 112.5,
-    conditions: ["Type 1 Diabetes", "Type 2 Diabetes (insulin-dependent)"],
-    drugClass: "Long-acting Insulin Analogues",
-    notes: "Requires specialist authorization. Prior approval from endocrinologist or diabetologist needed.",
-    requiresAuth: true,
-  },
-  {
-    id: 4,
-    name: "Atorvastatin 20mg",
-    genericName: "Atorvastatin Calcium",
-    category: "C",
-    coverage: "none",
-    retailPrice: 38.0,
-    drugClass: "HMG-CoA Reductase Inhibitors (Statins)",
-    conditions: ["Hyperlipidemia", "Cardiovascular Risk Reduction"],
-    alternative: {
-      name: "Simvastatin 20mg",
-      genericName: "Simvastatin",
-      category: "A",
-      coverage: "full",
-      copay: 0,
-    },
-    notes: "Not on NHIS formulary. Simvastatin is the covered statin alternative.",
-  },
-  {
-    id: 5,
-    name: "Amoxicillin 500mg",
-    genericName: "Amoxicillin Trihydrate",
-    category: "A",
-    coverage: "full",
-    copay: 0,
-    conditions: ["Bacterial Infections", "Upper Respiratory Tract Infections", "Urinary Tract Infections"],
-    drugClass: "Penicillin Antibiotics",
-    notes: "Widely available at all NHIS-accredited facilities. No copay required.",
-  },
-  {
-    id: 6,
-    name: "Coartem (Artemether-Lumefantrine)",
-    genericName: "Artemether 20mg / Lumefantrine 120mg",
-    category: "A",
-    coverage: "full",
-    copay: 0,
-    conditions: ["Uncomplicated Plasmodium falciparum Malaria"],
-    drugClass: "Artemisinin-based Combination Therapy (ACT)",
-    notes: "First-line antimalarial treatment in Ghana. Fully covered including pediatric formulations.",
-  },
-  {
-    id: 7,
-    name: "Omeprazole 20mg",
-    genericName: "Omeprazole",
-    category: "B",
-    coverage: "full",
-    copay: 2.5,
-    conditions: ["Gastroesophageal Reflux Disease (GERD)", "Peptic Ulcer Disease"],
-    drugClass: "Proton Pump Inhibitors",
-    notes: "Category B essential medicine. Small copay of GH\u20B52.50 applies.",
-  },
-  {
-    id: 8,
-    name: "Losartan 50mg",
-    genericName: "Losartan Potassium",
-    category: "B",
-    coverage: "partial",
-    coveragePercent: 80,
-    outOfPocket: 4.8,
-    retailPrice: 24.0,
-    conditions: ["Hypertension", "Diabetic Nephropathy"],
-    drugClass: "Angiotensin II Receptor Blockers (ARBs)",
-    notes: "Category B coverage at 80%. Recommended when ACE inhibitors cause cough.",
-    requiresAuth: false,
-  },
-];
+const NHIS_FORMULARY = [];
 
 const STATS = {
-  essentialMedicines: 596,
-  commonDrugPercent: 84,
+  essentialMedicines: 0,
+  commonDrugPercent: 0,
 };
 
 function ShieldIcon({ className }) {
@@ -534,6 +432,16 @@ export default function NHISLookup() {
             </div>
           )}
         </div>
+
+        {NHIS_FORMULARY.length === 0 && !selectedDrug && (
+          <div className="dark-glass rounded-2xl border border-white/5 p-8 text-center mt-6">
+            <svg className="w-12 h-12 mx-auto text-[#C9A84C]/40 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+            </svg>
+            <h3 className="font-display text-lg font-bold text-warm-800 dark:text-warm-200 mb-2">NHIS Formulary Database Coming Soon</h3>
+            <p className="text-sm text-warm-500 dark:text-warm-400 max-w-md mx-auto">We're working with the National Health Insurance Authority to provide real-time NHIS drug coverage lookup. Check back soon.</p>
+          </div>
+        )}
       </div>
 
       {/* Coverage Result */}

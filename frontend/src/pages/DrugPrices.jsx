@@ -3,75 +3,10 @@ import { useTranslation } from "../i18n/useTranslation";
 
 /* ───────────────────── Mock Data ───────────────────── */
 
-const MOCK_DRUGS = [
-  "Metformin 500mg (30 tablets)",
-  "Paracetamol 500mg (20 tablets)",
-  "Amoxicillin 500mg (21 capsules)",
-  "Coartem 80/480mg (24 tablets)",
-  "Ibuprofen 400mg (30 tablets)",
-  "Ciprofloxacin 500mg (10 tablets)",
-  "Amlodipine 5mg (30 tablets)",
-  "Omeprazole 20mg (14 capsules)",
-];
-
-const MOCK_PRICES = {
-  "Metformin 500mg (30 tablets)": [
-    { pharmacy: "Ernest Chemists", location: "Osu", price: 18.5, updated: "2026-03-05" },
-    { pharmacy: "Alpha Pharmacy", location: "Madina", price: 22.0, updated: "2026-03-04" },
-    { pharmacy: "Kinapharma", location: "Achimota", price: 15.0, updated: "2026-03-06" },
-    { pharmacy: "Dannex", location: "Tema", price: 28.0, updated: "2026-03-03" },
-    { pharmacy: "PharmHouse", location: "Kaneshie", price: 20.5, updated: "2026-03-05" },
-  ],
-  "Paracetamol 500mg (20 tablets)": [
-    { pharmacy: "Ernest Chemists", location: "Osu", price: 5.0, updated: "2026-03-05" },
-    { pharmacy: "Alpha Pharmacy", location: "Madina", price: 7.5, updated: "2026-03-04" },
-    { pharmacy: "Kinapharma", location: "Achimota", price: 4.5, updated: "2026-03-06" },
-    { pharmacy: "Dannex", location: "Tema", price: 8.0, updated: "2026-03-02" },
-    { pharmacy: "PharmHouse", location: "Kaneshie", price: 6.0, updated: "2026-03-05" },
-  ],
-  "Amoxicillin 500mg (21 capsules)": [
-    { pharmacy: "Ernest Chemists", location: "Osu", price: 32.0, updated: "2026-03-05" },
-    { pharmacy: "Kinapharma", location: "Achimota", price: 25.0, updated: "2026-03-06" },
-    { pharmacy: "Dannex", location: "Tema", price: 38.0, updated: "2026-03-03" },
-    { pharmacy: "PharmHouse", location: "Kaneshie", price: 29.0, updated: "2026-03-04" },
-  ],
-  "Coartem 80/480mg (24 tablets)": [
-    { pharmacy: "Ernest Chemists", location: "Osu", price: 45.0, updated: "2026-03-05" },
-    { pharmacy: "Alpha Pharmacy", location: "Madina", price: 52.0, updated: "2026-03-04" },
-    { pharmacy: "Kinapharma", location: "Achimota", price: 40.0, updated: "2026-03-06" },
-    { pharmacy: "Dannex", location: "Tema", price: 58.0, updated: "2026-03-02" },
-  ],
-  "Ibuprofen 400mg (30 tablets)": [
-    { pharmacy: "Ernest Chemists", location: "Osu", price: 12.0, updated: "2026-03-05" },
-    { pharmacy: "Alpha Pharmacy", location: "Madina", price: 15.0, updated: "2026-03-04" },
-    { pharmacy: "Kinapharma", location: "Achimota", price: 10.0, updated: "2026-03-06" },
-    { pharmacy: "PharmHouse", location: "Kaneshie", price: 14.0, updated: "2026-03-05" },
-  ],
-  "Ciprofloxacin 500mg (10 tablets)": [
-    { pharmacy: "Ernest Chemists", location: "Osu", price: 22.0, updated: "2026-03-05" },
-    { pharmacy: "Alpha Pharmacy", location: "Madina", price: 28.0, updated: "2026-03-04" },
-    { pharmacy: "Kinapharma", location: "Achimota", price: 19.0, updated: "2026-03-06" },
-    { pharmacy: "Dannex", location: "Tema", price: 30.0, updated: "2026-03-03" },
-  ],
-};
-
-const MOST_COMPARED = [
-  { name: "Paracetamol 500mg", avg: 6.2, low: 4.5, high: 8.0, icon: "\uD83D\uDC8A" },
-  { name: "Amoxicillin 500mg", avg: 31.0, low: 25.0, high: 38.0, icon: "\uD83E\uDDA0" },
-  { name: "Metformin 500mg", avg: 20.8, low: 15.0, high: 28.0, icon: "\uD83E\uDE78" },
-  { name: "Coartem 80/480mg", avg: 48.75, low: 40.0, high: 58.0, icon: "\uD83E\uDD9F" },
-  { name: "Ibuprofen 400mg", avg: 12.75, low: 10.0, high: 15.0, icon: "\uD83E\uDE79" },
-  { name: "Ciprofloxacin 500mg", avg: 24.75, low: 19.0, high: 30.0, icon: "\uD83D\uDD2C" },
-];
-
-const MOCK_TREND = [
-  { month: "Oct", price: 16.0 },
-  { month: "Nov", price: 15.5 },
-  { month: "Dec", price: 17.0 },
-  { month: "Jan", price: 16.5 },
-  { month: "Feb", price: 15.0 },
-  { month: "Mar", price: 15.0 },
-];
+const MOCK_DRUGS = [];
+const MOCK_PRICES = {};
+const MOST_COMPARED = [];
+const MOCK_TREND = [];
 
 const SAVINGS_TIPS = [
   {
@@ -462,6 +397,11 @@ export default function DrugPrices() {
           <h2 className="text-lg font-display gold-text">Most Compared Drugs</h2>
         </div>
 
+        {MOST_COMPARED.length === 0 && (
+          <div className="text-center py-8">
+            <p className="text-warm-500 dark:text-warm-400 text-sm">Drug price comparisons are being collected from pharmacies across Ghana. Check back soon.</p>
+          </div>
+        )}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {MOST_COMPARED.map((drug) => (
             <button

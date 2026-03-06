@@ -44,80 +44,7 @@ const GHANA_REGIONS = [
   "Upper West",
 ];
 
-const MOCK_PHARMACIES = [
-  {
-    id: 1,
-    name: "Ernest Chemists",
-    address: "Oxford Street, Osu, Accra",
-    distance: 1.2,
-    stock: "IN_STOCK",
-    price: 45.0,
-    hours: "Mon-Sat: 7:00 AM - 9:00 PM",
-    phone: "+233302774411",
-    lat: 5.5567,
-    lng: -0.1827,
-  },
-  {
-    id: 2,
-    name: "Alpha Pharmacy",
-    address: "Madina Market Road, Madina",
-    distance: 4.8,
-    stock: "LOW_STOCK",
-    price: 42.5,
-    hours: "Mon-Fri: 8:00 AM - 8:00 PM, Sat: 9:00 AM - 5:00 PM",
-    phone: "+233302520088",
-    lat: 5.6697,
-    lng: -0.1667,
-  },
-  {
-    id: 3,
-    name: "Kinapharma",
-    address: "Achimota Mile 7, Accra",
-    distance: 6.3,
-    stock: "IN_STOCK",
-    price: 48.0,
-    hours: "24 Hours",
-    phone: "+233302419933",
-    lat: 5.6145,
-    lng: -0.2341,
-  },
-  {
-    id: 4,
-    name: "Dannex Pharmacy",
-    address: "Community 1, Tema",
-    distance: 12.1,
-    stock: "OUT_OF_STOCK",
-    price: 40.0,
-    hours: "Mon-Sat: 7:30 AM - 9:30 PM",
-    phone: "+233303204455",
-    lat: 5.6698,
-    lng: -0.0166,
-  },
-  {
-    id: 5,
-    name: "Rite Aid Pharmacy",
-    address: "Boundary Road, East Legon",
-    distance: 3.5,
-    stock: "IN_STOCK",
-    price: 52.0,
-    hours: "Mon-Sun: 8:00 AM - 10:00 PM",
-    phone: "+233302518822",
-    lat: 5.6355,
-    lng: -0.1574,
-  },
-  {
-    id: 6,
-    name: "PharmHouse",
-    address: "Kaneshie Market Road, Kaneshie",
-    distance: 5.1,
-    stock: "LOW_STOCK",
-    price: 39.5,
-    hours: "Mon-Sat: 6:30 AM - 8:30 PM",
-    phone: "+233302229966",
-    lat: 5.5718,
-    lng: -0.2388,
-  },
-];
+const MOCK_PHARMACIES = [];
 
 /* ================================================================
    SVG Icon Components
@@ -880,16 +807,13 @@ export default function EmergencyDrugFinder() {
               </div>
             ) : pharmacyResults.length === 0 ? (
               /* No results */
-              <div className="dark-glass rounded-xl p-10 text-center">
-                <SearchIcon className="w-12 h-12 mx-auto text-gray-600 mb-4" />
-                <p className="text-gray-400 font-body text-lg mb-2">
-                  No pharmacies found
-                </p>
-                <p className="text-gray-500 font-body text-sm">
-                  {onlyInStock
-                    ? 'Try turning off "Only show in-stock" or search for a different drug.'
-                    : "Try adjusting your search term or selecting a different region."}
-                </p>
+              <div className="dark-glass rounded-2xl border border-white/5 p-8 text-center">
+                <svg className="w-12 h-12 mx-auto text-[#C9A84C]/40 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                </svg>
+                <h3 className="font-display text-lg font-bold text-warm-800 dark:text-warm-200 mb-2">Pharmacy Locator Coming Soon</h3>
+                <p className="text-sm text-warm-500 dark:text-warm-400 max-w-md mx-auto">We're connecting with pharmacies across Ghana to provide real-time stock availability. For emergencies, call <strong className="text-[#C9A84C]">193</strong> (Ghana Ambulance).</p>
               </div>
             ) : (
               /* Pharmacy cards */

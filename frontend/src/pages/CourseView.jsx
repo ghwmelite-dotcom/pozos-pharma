@@ -4813,29 +4813,9 @@ export default function CourseView() {
             {/* Resources */}
             <div>
               <h3 className="text-xl font-display font-bold gold-text mb-5">Course Resources</h3>
-              <ul className="space-y-3">
-                {[
-                  { name: `${course.title} - Study Guide (PDF)`, size: "2.4 MB" },
-                  { name: "Recommended Textbook References", size: "1.1 MB" },
-                  { name: "Practice Questions & Past Papers", size: "3.7 MB" },
-                  { name: "Ghana Pharmacy Council Syllabus Mapping", size: "0.5 MB" },
-                ].map((res, i) => (
-                  <li key={i}>
-                    <a
-                      href="#"
-                      onClick={(e) => e.preventDefault()}
-                      className="flex items-center justify-between gap-3 px-4 py-3 dark-glass rounded-xl border border-white/5 hover:border-[#C9A84C]/30 transition-colors group"
-                    >
-                      <span className="text-sm text-warm-700 dark:text-warm-300 group-hover:text-[#C9A84C] transition-colors">
-                        {res.name}
-                      </span>
-                      <span className="flex items-center gap-1 text-xs text-warm-500 flex-shrink-0">
-                        <IconDownload /> {res.size}
-                      </span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
+              <div className="dark-glass rounded-xl border border-white/5 p-6 text-center">
+                <p className="text-sm text-warm-500 dark:text-warm-400">Downloadable study resources will be available soon.</p>
+              </div>
             </div>
 
             {/* Related Courses */}

@@ -51,57 +51,12 @@ const SEVERITY_CONFIG = {
   },
 };
 
-const SHORTAGE_DATA = [
-  {
-    id: 1,
-    drug: "Insulin Glargine",
-    severity: "CRITICAL",
-    regions: ["Greater Accra", "Ashanti"],
-    reports: 47,
-    firstReported: "2026-02-18",
-    alternative: "Insulin NPH",
-    trend: "up",
-    trendData: [8, 12, 15, 22, 30, 39, 47],
-  },
-  {
-    id: 2,
-    drug: "Artemether-Lumefantrine (Coartem)",
-    severity: "WARNING",
-    regions: ["Northern", "Upper East"],
-    reports: 23,
-    firstReported: "2026-02-24",
-    alternative: "Artesunate-Amodiaquine",
-    trend: "up",
-    trendData: [3, 5, 8, 11, 15, 19, 23],
-  },
-  {
-    id: 3,
-    drug: "Metformin 1000mg",
-    severity: "WATCH",
-    regions: ["Western"],
-    reports: 12,
-    firstReported: "2026-03-01",
-    alternative: "Metformin 500mg (double dose)",
-    trend: "stable",
-    trendData: [4, 6, 8, 9, 10, 11, 12],
-  },
-  {
-    id: 4,
-    drug: "Ciprofloxacin 500mg",
-    severity: "WARNING",
-    regions: ["Volta", "Eastern"],
-    reports: 18,
-    firstReported: "2026-02-26",
-    alternative: "Levofloxacin",
-    trend: "down",
-    trendData: [5, 10, 16, 20, 21, 19, 18],
-  },
-];
+const SHORTAGE_DATA = [];
 
 const STATS = {
-  activeAlerts: SHORTAGE_DATA.length,
-  reportsThisWeek: 34,
-  drugsMonitored: 186,
+  activeAlerts: 0,
+  reportsThisWeek: 0,
+  drugsMonitored: 0,
 };
 
 /* ------------------------------------------------------------------ */
@@ -308,6 +263,15 @@ export default function ShortageRadar() {
         </h2>
 
         <div className="space-y-3 animate-stagger">
+          {SHORTAGE_DATA.length === 0 && (
+            <div className="dark-glass rounded-2xl border border-white/5 p-8 text-center">
+              <svg className="w-12 h-12 mx-auto text-[#C9A84C]/40 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+              </svg>
+              <h3 className="font-display text-lg font-bold text-warm-800 dark:text-warm-200 mb-2">No Active Shortage Alerts</h3>
+              <p className="text-sm text-warm-500 dark:text-warm-400 max-w-md mx-auto">The shortage monitoring system is being set up. Community-reported drug shortages across Ghana will appear here in real-time.</p>
+            </div>
+          )}
           {SHORTAGE_DATA.map((item) => {
             const sev = SEVERITY_CONFIG[item.severity];
             const isExpanded = expandedId === item.id;

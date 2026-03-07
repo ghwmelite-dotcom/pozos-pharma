@@ -399,7 +399,7 @@ export default function DrugPrices() {
 
         {MOST_COMPARED.length === 0 && (
           <div className="text-center py-8">
-            <p className="text-warm-500 dark:text-warm-400 text-sm">Drug price comparisons are being collected from pharmacies across Ghana. Check back soon.</p>
+            <p className="text-warm-500 dark:text-warm-400 text-sm">No price data available yet. Drug price comparisons from pharmacies across Ghana will appear here.</p>
           </div>
         )}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">

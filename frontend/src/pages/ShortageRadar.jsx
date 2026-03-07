@@ -269,7 +269,7 @@ export default function ShortageRadar() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
               </svg>
               <h3 className="font-display text-lg font-bold text-warm-800 dark:text-warm-200 mb-2">No Active Shortage Alerts</h3>
-              <p className="text-sm text-warm-500 dark:text-warm-400 max-w-md mx-auto">The shortage monitoring system is being set up. Community-reported drug shortages across Ghana will appear here in real-time.</p>
+              <p className="text-sm text-warm-500 dark:text-warm-400 max-w-md mx-auto">No shortage alerts have been reported yet. Community-reported drug shortages across Ghana will appear here.</p>
             </div>
           )}
           {SHORTAGE_DATA.map((item) => {

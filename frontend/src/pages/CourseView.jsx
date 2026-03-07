@@ -4814,7 +4814,7 @@ export default function CourseView() {
             <div>
               <h3 className="text-xl font-display font-bold gold-text mb-5">Course Resources</h3>
               <div className="dark-glass rounded-xl border border-white/5 p-6 text-center">
-                <p className="text-sm text-warm-500 dark:text-warm-400">Downloadable study resources will be available soon.</p>
+                <p className="text-sm text-warm-500 dark:text-warm-400">No downloadable resources available yet.</p>
               </div>
             </div>
 

@@ -812,8 +812,8 @@ export default function EmergencyDrugFinder() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
                 </svg>
-                <h3 className="font-display text-lg font-bold text-warm-800 dark:text-warm-200 mb-2">Pharmacy Locator Coming Soon</h3>
-                <p className="text-sm text-warm-500 dark:text-warm-400 max-w-md mx-auto">We're connecting with pharmacies across Ghana to provide real-time stock availability. For emergencies, call <strong className="text-[#C9A84C]">193</strong> (Ghana Ambulance).</p>
+                <h3 className="font-display text-lg font-bold text-warm-800 dark:text-warm-200 mb-2">No Pharmacies Found</h3>
+                <p className="text-sm text-warm-500 dark:text-warm-400 max-w-md mx-auto">No pharmacy stock data available yet. For emergencies, call <strong className="text-[#C9A84C]">193</strong> (Ghana Ambulance).</p>
               </div>
             ) : (
               /* Pharmacy cards */

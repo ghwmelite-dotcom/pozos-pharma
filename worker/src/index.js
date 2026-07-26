@@ -63,7 +63,17 @@ export default {
       } else if (path.startsWith('/api/tutor/')) {
         response = await handleTutor(request, env, path);
       } else if (path.startsWith('/api/clinic/')) {
-        response = await handleClinic(request, env, path);
+        // Clinic/telemedicine is in-progress and NOT production-ready (schema/code
+        // still being reconciled). Gated behind CLINIC_ENABLED so it cannot serve
+        // broken endpoints in production. Set CLINIC_ENABLED="true" to enable.
+        if (env.CLINIC_ENABLED === 'true') {
+          response = await handleClinic(request, env, path);
+        } else {
+          response = new Response(
+            JSON.stringify({ error: 'The virtual clinic is not available yet.' }),
+            { status: 503, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
       } else if (path.startsWith('/api/herbs/')) {
         response = await handleHerbs(request, env, path);
       }

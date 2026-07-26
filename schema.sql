@@ -230,7 +230,7 @@ CREATE INDEX IF NOT EXISTS idx_tutor_usage_user_date ON tutor_usage(user_id, dat
 
 CREATE TABLE IF NOT EXISTS clinic_consultations (
   id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL REFERENCES users(id),
+  patient_id TEXT NOT NULL REFERENCES users(id),   -- was user_id; aligned to routes/clinic.js
   pharmacist_id TEXT REFERENCES pharmacists(id),
   tier TEXT NOT NULL CHECK(tier IN ('quick', 'standard', 'comprehensive')),
   status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending', 'paid', 'waiting', 'active', 'completed', 'cancelled', 'expired', 'summarized')),
@@ -238,9 +238,11 @@ CREATE TABLE IF NOT EXISTS clinic_consultations (
   scheduled_at INTEGER,
   started_at INTEGER,
   ended_at INTEGER,
-  pre_consult_reason TEXT,
-  pre_consult_meds TEXT,
-  pre_consult_allergies TEXT,
+  reason TEXT,                    -- was pre_consult_reason
+  current_meds TEXT,             -- was pre_consult_meds
+  allergies TEXT,                -- was pre_consult_allergies
+  preferred_specialization TEXT, -- added to match routes/clinic.js
+  duration_minutes INTEGER,      -- added to match routes/clinic.js
   payment_ref TEXT,
   amount INTEGER NOT NULL DEFAULT 0,
   summary TEXT,
@@ -284,7 +286,8 @@ CREATE TABLE IF NOT EXISTS clinic_prescriptions (
   recommendations TEXT,
   referral_notes TEXT,
   lifestyle_advice TEXT,
-  created_at INTEGER DEFAULT (unixepoch())
+  created_at INTEGER DEFAULT (unixepoch()),
+  updated_at TEXT
 );
 
 CREATE TABLE IF NOT EXISTS clinic_notes (
@@ -292,7 +295,8 @@ CREATE TABLE IF NOT EXISTS clinic_notes (
   consultation_id TEXT NOT NULL REFERENCES clinic_consultations(id),
   pharmacist_id TEXT NOT NULL REFERENCES pharmacists(id),
   content TEXT NOT NULL,
-  created_at INTEGER DEFAULT (unixepoch())
+  created_at INTEGER DEFAULT (unixepoch()),
+  updated_at TEXT
 );
 
 CREATE TABLE IF NOT EXISTS clinic_slots (
@@ -311,7 +315,8 @@ CREATE TABLE IF NOT EXISTS clinic_wallet (
   balance INTEGER DEFAULT 0,
   total_earned INTEGER DEFAULT 0,
   total_withdrawn INTEGER DEFAULT 0,
-  created_at INTEGER DEFAULT (unixepoch())
+  created_at INTEGER DEFAULT (unixepoch()),
+  updated_at TEXT
 );
 
 CREATE TABLE IF NOT EXISTS clinic_transactions (
@@ -325,7 +330,7 @@ CREATE TABLE IF NOT EXISTS clinic_transactions (
 );
 
 -- Indexes
-CREATE INDEX IF NOT EXISTS idx_clinic_consult_user ON clinic_consultations(user_id);
+CREATE INDEX IF NOT EXISTS idx_clinic_consult_user ON clinic_consultations(patient_id);
 CREATE INDEX IF NOT EXISTS idx_clinic_consult_pharmacist ON clinic_consultations(pharmacist_id);
 CREATE INDEX IF NOT EXISTS idx_clinic_consult_status ON clinic_consultations(status);
 CREATE INDEX IF NOT EXISTS idx_clinic_consult_scheduled ON clinic_consultations(scheduled_at);

@@ -91,12 +91,12 @@ export async function handleClinic(request, env, path) {
 
 async function getOrCreateWallet(pharmacistId, env) {
   let wallet = await env.DB.prepare(
-    'SELECT * FROM clinic_wallets WHERE pharmacist_id = ?'
+    'SELECT * FROM clinic_wallet WHERE pharmacist_id = ?'
   ).bind(pharmacistId).first();
   if (!wallet) {
     const id = crypto.randomUUID();
     await env.DB.prepare(
-      'INSERT INTO clinic_wallets (id, pharmacist_id, balance) VALUES (?, ?, 0)'
+      'INSERT INTO clinic_wallet (id, pharmacist_id, balance) VALUES (?, ?, 0)'
     ).bind(id, pharmacistId).run();
     wallet = { id, pharmacist_id: pharmacistId, balance: 0 };
   }
@@ -485,7 +485,7 @@ async function handleWebhook(request, env) {
       const wallet = await getOrCreateWallet(consultation.pharmacist_id, env);
 
       await env.DB.prepare(
-        'UPDATE clinic_wallets SET balance = balance + ?, updated_at = datetime(\'now\') WHERE id = ?'
+        'UPDATE clinic_wallet SET balance = balance + ?, updated_at = datetime(\'now\') WHERE id = ?'
       ).bind(earnings, wallet.id).run();
 
       await env.DB.prepare(
@@ -549,7 +549,7 @@ async function requestWithdrawal(request, env) {
 
   // Create debit transaction and reduce balance
   await env.DB.prepare(
-    'UPDATE clinic_wallets SET balance = balance - ?, updated_at = datetime(\'now\') WHERE id = ?'
+    'UPDATE clinic_wallet SET balance = balance - ?, updated_at = datetime(\'now\') WHERE id = ?'
   ).bind(amount, wallet.id).run();
 
   await env.DB.prepare(

@@ -79,3 +79,48 @@ export async function getDrugContext(userMessage, env) {
 
   return context;
 }
+
+/**
+ * Search the herbs table for relevant traditional/herbal remedies and return
+ * formatted context. Foregrounds evidence_level, herb-drug interactions and
+ * safety concerns so the AI never presents traditional use as clinical fact.
+ * Returns at most 3 search terms x 3 results = 9 herb entries (deduplicated).
+ */
+export async function getHerbContext(userMessage, env) {
+  const searchTerms = extractMedicalTerms(userMessage);
+  if (searchTerms.length === 0) return '';
+
+  const seen = new Set();
+  let context = '';
+
+  for (const term of searchTerms.slice(0, 3)) {
+    const searchTerm = `%${term}%`;
+    try {
+      const results = await env.DB.prepare(
+        `SELECT common_name, local_names, scientific_name, traditional_uses, evidence_level,
+                herb_drug_interactions, safety_concerns, pregnancy_caution
+         FROM herbs
+         WHERE common_name LIKE ? OR local_names LIKE ? OR scientific_name LIKE ?
+         LIMIT 3`
+      ).bind(searchTerm, searchTerm, searchTerm).all();
+
+      for (const herb of (results.results || [])) {
+        if (seen.has(herb.common_name)) continue;
+        seen.add(herb.common_name);
+
+        context += `\n--- ${herb.common_name}${herb.local_names ? ' (' + herb.local_names + ')' : ''} ---\n`;
+        if (herb.scientific_name) context += `Scientific name: ${herb.scientific_name}\n`;
+        context += `Evidence level: ${herb.evidence_level || 'unknown'} (do NOT present traditional use as proven)\n`;
+        context += `Traditional uses (claim, not endorsement): ${herb.traditional_uses || 'N/A'}\n`;
+        context += `Herb-drug interactions: ${herb.herb_drug_interactions || 'Not well documented'}\n`;
+        context += `Safety concerns: ${herb.safety_concerns || 'N/A'}\n`;
+        if (herb.pregnancy_caution) context += `Pregnancy: ${herb.pregnancy_caution}\n`;
+      }
+    } catch (err) {
+      console.error(`Herb RAG lookup failed for term "${term}":`, err.message);
+      // Non-fatal (e.g. herbs table not migrated yet) — continue.
+    }
+  }
+
+  return context;
+}

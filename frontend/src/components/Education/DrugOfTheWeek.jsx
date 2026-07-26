@@ -4,20 +4,27 @@ import { Link } from "react-router-dom";
 const API_URL = import.meta.env.VITE_API_URL || "";
 
 export default function DrugOfTheWeek() {
-  const [article, setArticle] = useState(null);
+  const [drug, setDrug] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch(`${API_URL}/api/articles/drug-of-week`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (data?.article) setArticle(data.article);
+        if (data?.drug) setDrug(data.drug);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading || !article) return null;
+  if (loading || !drug) return null;
+
+  const tags = [
+    drug.drug_class,
+    drug.otc ? "OTC" : "Prescription",
+    drug.nhis_covered ? `NHIS Tier ${drug.nhis_tier || "A"}` : null,
+    drug.pregnancy_category ? `Pregnancy Cat. ${drug.pregnancy_category}` : null,
+  ].filter(Boolean);
 
   return (
     <section className="max-w-3xl mx-auto px-4">
@@ -37,7 +44,6 @@ export default function DrugOfTheWeek() {
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              <path d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 4.5h3" />
               <rect x="6" y="1.5" width="12" height="21" rx="2.25" />
               <line x1="6" y1="12" x2="18" y2="12" />
             </svg>
@@ -52,23 +58,48 @@ export default function DrugOfTheWeek() {
               Drug of the Week
             </div>
 
-            {/* Title */}
+            {/* Drug name */}
             <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">
-              {article.title}
+              {drug.generic_name}
             </h2>
 
-            {/* Summary */}
+            {/* Brand names */}
+            {drug.brand_names && (
+              <p className="text-xs text-gray-500 dark:text-gray-500 mt-0.5">
+                {drug.brand_names}
+              </p>
+            )}
+
+            {/* Uses */}
             <p className="mt-1.5 text-sm text-gray-700 dark:text-gray-400 leading-relaxed line-clamp-2">
-              {article.summary}
+              <span className="font-medium text-gray-800 dark:text-gray-300">Uses:</span>{" "}
+              {drug.uses}
             </p>
+
+            {/* Tags */}
+            <div className="flex flex-wrap gap-1.5 mt-2.5">
+              {tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 border border-amber-200/60 dark:border-amber-700/40"
+                >
+                  {tag}
+                </span>
+              ))}
+              {drug.avg_price_ghs != null && (
+                <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border border-green-200/60 dark:border-green-700/40">
+                  ~GH₵{Number(drug.avg_price_ghs).toFixed(2)}
+                </span>
+              )}
+            </div>
 
             {/* CTA */}
             <Link
-              to={`/health-hub/${article.slug}`}
+              to="/drugs"
               className="inline-flex items-center gap-1.5 mt-3 text-sm font-semibold text-[#7A6520] dark:text-ghana-gold hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
-              aria-label={`Read more about ${article.title}`}
+              aria-label={`View ${drug.generic_name} in the drug database`}
             >
-              Read full article
+              View in Drug Database
               <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                 <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
               </svg>

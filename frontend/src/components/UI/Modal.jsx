@@ -75,7 +75,7 @@ export default function Modal({
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-[fadeIn_200ms_ease-out]"
+      className="fixed inset-0 z-50 flex items-start sm:items-center justify-center overflow-y-auto p-4 py-8 bg-black/50 backdrop-blur-sm animate-[fadeIn_200ms_ease-out]"
       onClick={handleOverlayClick}
       role="presentation"
     >
@@ -92,6 +92,7 @@ export default function Modal({
           border border-warm-200/60 dark:border-gray-700
           animate-[scaleIn_200ms_ease-out]
           focus:outline-none
+          my-auto
         `}
         style={{
           animationFillMode: "both",

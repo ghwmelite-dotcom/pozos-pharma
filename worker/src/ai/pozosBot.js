@@ -1,4 +1,4 @@
-import { getDrugContext } from './drugRAG.js';
+import { getDrugContext, getHerbContext } from './drugRAG.js';
 
 /**
  * Classify whether a user message requires the larger, more capable model.
@@ -41,6 +41,7 @@ STRICT RULES:
 8. If 3 or more drug interactions are involved, flag as HIGH PRIORITY and recommend human pharmacist review
 9. Be aware of common Ghanaian health concerns: malaria, sickle cell disease, typhoid, hypertension
 10. When referencing drug availability, consider what's commonly found in Ghanaian pharmacies
+11. NEVER state specific numeric dosages, mg/kg calculations, or definitive drug-interaction verdicts for a drug UNLESS that drug's data is supplied in the "drug database information" section below. If it is not supplied, say you have no verified local record for that drug, give only general non-dosing guidance, and route the user to a verified pharmacist. Do not fill dosing gaps from memory.
 
 RESPONSE FORMAT:
 - Use markdown headings (##) for multi-part answers
@@ -61,7 +62,20 @@ const EMERGENCY_KEYWORDS = [
   'heart attack', 'seizure right now', 'bleeding won\'t stop'
 ];
 
-export async function getPozosResponse(userMessage, sessionHistory, env, { language = 'en' } = {}) {
+// Room-specific context to make PozosBot responses relevant to the chatroom topic
+const ROOM_CONTEXT = {
+  'general': 'You are in the **General Questions** room. Answer any pharmaceutical question the user has — medications, dosages, side effects, availability in Ghana, etc.',
+  'interactions': 'You are in the **Drug Interactions** room. Focus on drug-drug, drug-food, and drug-supplement interactions. Always assess combination safety, severity, and recommend alternatives when interactions are dangerous. Ask what other medications the user takes.',
+  'chronic': 'You are in the **Chronic Conditions** room. Focus on long-term medication management for conditions like diabetes, hypertension, sickle cell disease, asthma, and HIV/AIDS — all common in Ghana. Discuss adherence, lifestyle, and monitoring.',
+  'mental-health': 'You are in the **Mental Health Medications** room. Focus on antidepressants, anxiolytics, antipsychotics, and mental wellness support. Be compassionate and non-judgmental. Discuss side effects, tapering, and when to seek professional help.',
+  'pediatric': 'You are in the **Children\'s Health** room. Focus on pediatric dosing, age-appropriate formulations (syrups, suspensions), weight-based calculations, and child safety. Always ask for the child\'s age and weight before giving dosing advice.',
+  'womens-health': 'You are in the **Women\'s Health** room. Focus on contraceptives, hormonal therapy, pregnancy-safe medications, breastfeeding drug safety, and reproductive health. Reference Ghana FDA pregnancy categories when relevant.',
+  'otc': 'You are in the **OTC Medications** room. Focus on non-prescription medicines available at Ghanaian pharmacies — pain relief, cold remedies, antacids, antihistamines, etc. Help users choose appropriate OTC options and know when to see a doctor.',
+  'oncology': 'You are in the **Cancer Support** room. Focus on oncology medications, managing chemotherapy side effects, supportive care, and palliative medications. Be empathetic. Always recommend working closely with an oncologist.',
+  'herbal': 'You are in the **Herbal & Traditional Medicine** room. Focus on traditional Ghanaian remedies (neem, moringa, prekese, etc.), herb-drug interactions, and evidence-based assessment of herbal claims. Warn about unverified claims while being culturally respectful.',
+};
+
+export async function getPozosResponse(userMessage, sessionHistory, env, { language = 'en', roomSlug = 'general' } = {}) {
   // 1. Emergency pre-check
   const lower = userMessage.toLowerCase();
   const isEmergency = EMERGENCY_KEYWORDS.some(k => lower.includes(k));
@@ -94,7 +108,7 @@ export async function getPozosResponse(userMessage, sessionHistory, env, { langu
     languageInstruction = "\n\nLANGUAGE: The user's preferred language is Ga. Respond primarily in Ga with English medical terms. Always keep drug names, dosages, and medical terminology in English for safety. Greet with 'Ogbeke!' and use Ga for conversational parts.";
   }
 
-  // 2b. RAG — fetch relevant drug info from the database
+  // 2b. RAG — fetch relevant drug + herbal info from the database
   let drugContext = '';
   try {
     drugContext = await getDrugContext(userMessage, env);
@@ -103,9 +117,26 @@ export async function getPozosResponse(userMessage, sessionHistory, env, { langu
     // Non-fatal — continue without drug context
   }
 
-  let systemContent = SYSTEM_PROMPT + languageInstruction;
+  let herbContext = '';
+  try {
+    herbContext = await getHerbContext(userMessage, env);
+  } catch (ragErr) {
+    console.error('Herb RAG lookup failed:', ragErr.message);
+    // Non-fatal — continue without herbal context
+  }
+
+  // Inject room-specific context
+  const roomContext = ROOM_CONTEXT[roomSlug] || ROOM_CONTEXT['general'];
+
+  let systemContent = SYSTEM_PROMPT + `\n\nROOM CONTEXT: ${roomContext}` + languageInstruction;
   if (drugContext) {
-    systemContent += `\n\nHere is relevant drug database information for context:\n${drugContext}\nUse this verified information in your response when applicable.`;
+    systemContent += `\n\nThe following drug database information was retrieved for this question. Treat it as the source of truth for these specific drugs and, where an entry includes a source reference, cite it. Do NOT describe this data as "verified" unless the entry shows it was reviewed by a pharmacist:\n${drugContext}`;
+  } else {
+    systemContent += `\n\nNo matching drug entries were found in the PozosPharma database for this question. Per rule 11, do NOT provide specific numeric dosages, mg/kg calculations, or definitive interaction verdicts from memory. Give only general, non-dosing guidance, state clearly that you have no verified local record for this drug, and recommend the user confirm with a verified pharmacist (type /pharmacist).`;
+  }
+
+  if (herbContext) {
+    systemContent += `\n\nThe following HERBAL / traditional medicine information was retrieved for this question. Use it, but follow these rules: (a) always state the evidence_level and do NOT present traditional use as proven treatment; (b) prominently warn about any herb-drug interactions and safety concerns listed; (c) be culturally respectful of traditional Ghanaian medicine while being honest about what is and isn't proven; (d) for any serious condition (e.g. malaria, high blood pressure, diabetes, pregnancy), advise the user not to rely on herbs alone and to consult a pharmacist or doctor:\n${herbContext}`;
   }
 
   const messages = [

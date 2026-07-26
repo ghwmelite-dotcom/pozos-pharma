@@ -1,9 +1,15 @@
--- Comprehensive Pharmaceutical Database for Ghana
--- drugs-seed.sql - 150+ additional drugs (d11 - d165)
--- Covers antimalarials, antibiotics, antihypertensives, diabetes, cardiovascular,
--- pain/anti-inflammatory, mental health, respiratory, GI, vitamins, women's health,
--- dermatology, eye/ENT, ARVs, antifungals, antihistamines, sickle cell,
--- sedatives/anesthesia, and miscellaneous categories.
+-- Pharmaceutical Database for Ghana — Antimalarials (d11 - d20)
+-- drugs-seed.sql — 10 antimalarial entries (d11–d20).
+--
+-- NOTE: The remaining categories (antibiotics, antihypertensives, diabetes,
+-- cardiovascular, pain/anti-inflammatory, mental health, respiratory, GI,
+-- vitamins, women's health, dermatology, eye/ENT, ARVs, antifungals,
+-- antihistamines, sickle cell, etc.) live in drugs-seed-extended.sql (d21–d165).
+--
+-- ⚠️ The d11–d20 rows below predate the provenance columns and have no
+--    source_reference/reviewed_by — treat them as UNVERIFIED like the extended
+--    set. A pharmacist should backfill provenance and review the mefloquine (d15)
+--    and sulfadoxine-pyrimethamine (d16) contraindication gaps flagged in review.
 
 -- ============================================================
 -- ANTIMALARIALS (d11 - d20)
@@ -21,11 +27,11 @@ VALUES ('d13', 'Quinine', 'Qualaquin, Quinimax, Quinoctal', 'Antimalarial (Cinch
 INSERT OR IGNORE INTO drugs (id, generic_name, brand_names, drug_class, uses, side_effects, interactions, dosage_notes, pregnancy_category, otc, controlled)
 VALUES ('d14', 'Proguanil', 'Paludrine, Malarone (with atovaquone)', 'Antimalarial (Biguanide)', 'Malaria prophylaxis, particularly for travelers to endemic areas.', 'Nausea, diarrhea, mouth ulcers, hair loss (rare), skin rash', 'Warfarin (enhanced anticoagulation), antacids (reduced absorption)', 'Adults: 200 mg daily for prophylaxis, started 1-2 days before travel. Children: 3 mg/kg daily.', 'C', 0, 0);
 
-INSERT OR IGNORE INTO drugs (id, generic_name, brand_names, drug_class, uses, side_effects, interactions, dosage_notes, pregnancy_category, otc, controlled)
-VALUES ('d15', 'Mefloquine', 'Lariam, Mephaquin, Mefliam', 'Antimalarial (Quinoline methanol)', 'Malaria prophylaxis and treatment of chloroquine-resistant P. falciparum.', 'Vivid dreams, insomnia, anxiety, dizziness, nausea, vomiting, neuropsychiatric effects (depression, psychosis - rare)', 'Quinine and quinidine (cardiac arrhythmias), halofantrine (fatal QT prolongation), anticonvulsants (reduced seizure threshold), beta-blockers', 'Adults: Prophylaxis 250 mg weekly; Treatment 1250 mg as split dose. Children: Prophylaxis 5 mg/kg weekly. Not for children under 5 kg.', 'C', 0, 0);
+INSERT OR IGNORE INTO drugs (id, generic_name, brand_names, drug_class, uses, side_effects, interactions, dosage_notes, pregnancy_category, otc, controlled, contraindications, pregnancy_category_system, source_reference)
+VALUES ('d15', 'Mefloquine', 'Lariam, Mephaquin, Mefliam', 'Antimalarial (Quinoline methanol)', 'Malaria prophylaxis and treatment of chloroquine-resistant P. falciparum.', 'Vivid dreams, insomnia, anxiety, dizziness, nausea, vomiting; SERIOUS neuropsychiatric reactions (depression, psychosis, hallucinations, suicidal ideation) that may persist for months to years after the drug is stopped', 'Quinine and quinidine (cardiac arrhythmias), halofantrine (fatal QT prolongation), anticonvulsants (reduced seizure threshold), beta-blockers', 'Adults: Prophylaxis 250 mg weekly; Treatment 1250 mg as split dose. Children: Prophylaxis 5 mg/kg weekly. Not for children under 5 kg.', 'C', 0, 0, 'CONTRAINDICATED in patients with a history of psychiatric disorders (depression, anxiety disorder, psychosis, schizophrenia) or convulsions/seizures; hypersensitivity to mefloquine, quinine, or quinidine. Carries a US-FDA boxed warning — discontinue immediately and switch agent if neuropsychiatric symptoms appear.', 'US-FDA (legacy)', 'US FDA Drug Safety Communication / boxed warning (fact verified); reviewed_by NULL — licensed-pharmacist sign-off still required');
 
-INSERT OR IGNORE INTO drugs (id, generic_name, brand_names, drug_class, uses, side_effects, interactions, dosage_notes, pregnancy_category, otc, controlled)
-VALUES ('d16', 'Sulfadoxine-Pyrimethamine', 'Fansidar, Laridox, Malafan, Odar', 'Antimalarial (Antifolate combination)', 'Intermittent preventive treatment of malaria in pregnancy (IPTp); treatment of uncomplicated malaria in combination.', 'Skin rash, Stevens-Johnson syndrome (rare), nausea, vomiting, blood dyscrasias, hepatotoxicity', 'Folate antagonists (methotrexate, trimethoprim - increased toxicity), warfarin (enhanced effect)', 'Adults: 3 tablets (1500/75 mg) as single dose. IPTp: 3 tablets at each ANC visit from 2nd trimester, at least 1 month apart. Not for children under 2 months.', 'C', 0, 0);
+INSERT OR IGNORE INTO drugs (id, generic_name, brand_names, drug_class, uses, side_effects, interactions, dosage_notes, pregnancy_category, otc, controlled, contraindications, pregnancy_category_system, source_reference)
+VALUES ('d16', 'Sulfadoxine-Pyrimethamine', 'Fansidar, Laridox, Malafan, Odar', 'Antimalarial (Antifolate combination)', 'Intermittent preventive treatment of malaria in pregnancy (IPTp); treatment of uncomplicated malaria in combination.', 'Skin rash, Stevens-Johnson syndrome (rare), nausea, vomiting, blood dyscrasias, hepatotoxicity', 'Folate antagonists (methotrexate, trimethoprim - increased toxicity), warfarin (enhanced effect)', 'Adults: 3 tablets (1500/75 mg) as single dose. IPTp: 3 tablets at each ANC visit from 2nd trimester, at least 1 month apart. Not for children under 2 months.', 'C', 0, 0, 'CONTRAINDICATED in the FIRST TRIMESTER of pregnancy. Do NOT give IPTp-SP to HIV-positive pregnant women already taking cotrimoxazole (co-trimoxazole) prophylaxis (redundant antifolate mechanism, additive toxicity). Also contraindicated in sulphonamide hypersensitivity, severe renal/hepatic impairment, and infants under 2 months; caution in G6PD deficiency.', 'US-FDA (legacy)', 'WHO malaria guidelines / IPTp-SP guidance (fact verified); reviewed_by NULL — licensed-pharmacist sign-off still required');
 
 INSERT OR IGNORE INTO drugs (id, generic_name, brand_names, drug_class, uses, side_effects, interactions, dosage_notes, pregnancy_category, otc, controlled)
 VALUES ('d17', 'Atovaquone-Proguanil', 'Malarone, Maloff Protect', 'Antimalarial (Fixed-dose combination)', 'Malaria prophylaxis and treatment of uncomplicated P. falciparum malaria.', 'Abdominal pain, nausea, vomiting, headache, diarrhea, elevated liver enzymes', 'Tetracycline (reduced atovaquone levels), metoclopramide (reduced absorption), rifampicin (reduced atovaquone levels)', 'Adults: Prophylaxis 1 tablet (250/100 mg) daily; Treatment 4 tablets daily for 3 days. Children 11-40 kg: dose adjusted by weight.', 'C', 0, 0);

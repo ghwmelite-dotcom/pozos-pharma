@@ -102,18 +102,23 @@ export default function useWebSocket(roomSlug) {
       }
 
       switch (data.type) {
-        case "message":
-          // Avoid duplicate messages from self that were already optimistically added
+        case "message": {
+          // Skip user messages from self — already added optimistically via REST
+          const currentUser = useChatStore.getState().user;
+          if (data.senderId === currentUser?.id && (data.senderType === 'user' || data.sender_type === 'user')) {
+            break;
+          }
           addMessage({
             id: data.id,
             content: data.content,
             sender: data.sender || data.username,
-            sender_type: data.sender_type || "user",
+            sender_type: data.senderType || data.sender_type || "user",
             room_slug: roomSlug,
             created_at: data.created_at || new Date().toISOString(),
             metadata: data.metadata,
           });
           break;
+        }
 
         case "typing":
           if (data.username && data.username !== user?.username) {

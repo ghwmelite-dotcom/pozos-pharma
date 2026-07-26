@@ -140,15 +140,32 @@ async function getFeaturedArticles(env) {
 }
 
 async function getDrugOfWeek(env) {
-  const article = await env.DB.prepare(
-    'SELECT id, title, slug, summary, content, category, tags, views, created_at FROM health_articles WHERE drug_of_week = 1 AND published = 1 ORDER BY updated_at DESC LIMIT 1'
-  ).first();
+  // Count total drugs
+  const countRow = await env.DB.prepare('SELECT COUNT(*) as total FROM drugs').first();
+  const total = countRow?.total || 0;
+  if (total === 0) {
+    return json({ error: 'No drugs in database' }, 404);
+  }
 
-  if (!article) {
+  // Calculate ISO week number to deterministically rotate each week
+  const now = new Date();
+  const jan1 = new Date(now.getFullYear(), 0, 1);
+  const dayOfYear = Math.floor((now - jan1) / 86400000) + 1;
+  const weekNumber = Math.ceil((dayOfYear + jan1.getDay()) / 7);
+
+  // Pick a drug based on week number
+  const index = weekNumber % total;
+
+  const drug = await env.DB.prepare(
+    'SELECT * FROM drugs ORDER BY id LIMIT 1 OFFSET ?'
+  ).bind(index).first();
+
+  if (!drug) {
     return json({ error: 'No drug of the week found' }, 404);
   }
 
-  return json({ article });
+  // Return week metadata alongside the drug
+  return json({ drug, week_number: weekNumber, year: now.getFullYear() });
 }
 
 async function createArticle(request, env, user) {

@@ -10,6 +10,8 @@ import { handleArticles } from './routes/articles.js';
 import { handleVoice } from './routes/voice.js';
 import { handleVision } from './routes/vision.js';
 import { handleTutor } from './routes/tutor.js';
+import { handleClinic } from './routes/clinic.js';
+import { handleHerbs } from './routes/herbs.js';
 export { ChatRoom } from './durable-objects/ChatRoom.js';
 
 export default {
@@ -60,6 +62,10 @@ export default {
         response = await handleAnalytics(request, env, path);
       } else if (path.startsWith('/api/tutor/')) {
         response = await handleTutor(request, env, path);
+      } else if (path.startsWith('/api/clinic/')) {
+        response = await handleClinic(request, env, path);
+      } else if (path.startsWith('/api/herbs/')) {
+        response = await handleHerbs(request, env, path);
       }
     } catch (err) {
       console.error('Route error:', err);

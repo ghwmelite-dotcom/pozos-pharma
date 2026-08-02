@@ -1,0 +1,164 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" width="1200" height="700">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#14111E"/>
+      <stop offset="100%" stop-color="#0B0A10"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#A8893A"/>
+      <stop offset="50%" stop-color="#C9A84C"/>
+      <stop offset="100%" stop-color="#E8D48B"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1B1728"/>
+      <stop offset="100%" stop-color="#131020"/>
+    </linearGradient>
+    <linearGradient id="cardGreen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#12241C"/>
+      <stop offset="100%" stop-color="#0E1A15"/>
+    </linearGradient>
+    <marker id="arrowGold" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 Z" fill="#C9A84C"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 Z" fill="#1FA36B"/>
+    </marker>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="1.2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect x="1" y="1" width="1198" height="698" rx="24" fill="url(#bg)" stroke="#C9A84C" stroke-opacity="0.16" stroke-width="1.5"/>
+
+  <text x="48" y="52" font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="15" fill="#8E87A0" letter-spacing="3">SYSTEM ARCHITECTURE</text>
+  <rect x="48" y="62" width="90" height="3" rx="1.5" fill="url(#gold)" opacity="0.7"/>
+
+  <!-- ============ CLIENT ============ -->
+  <g>
+    <rect x="400" y="60" width="400" height="90" rx="14" fill="url(#card)" stroke="#C9A84C" stroke-opacity="0.45" stroke-width="1.2"/>
+    <text x="600" y="94" text-anchor="middle" font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="17" font-weight="600" fill="#E8D48B">PozosPharma PWA</text>
+    <text x="600" y="118" text-anchor="middle" font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="12.5" fill="#9A93AE">React 18 &#183; Vite &#183; Tailwind CSS &#183; Zustand &#183; Service Worker</text>
+    <text x="600" y="138" text-anchor="middle" font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="11.5" fill="#6E6884">Hosted on Cloudflare Pages &#183; pozospharma.pages.dev</text>
+  </g>
+
+  <!-- ============ WORKER ============ -->
+  <g>
+    <rect x="330" y="230" width="540" height="180" rx="14" fill="url(#card)" stroke="#C9A84C" stroke-opacity="0.45" stroke-width="1.2"/>
+    <text x="600" y="262" text-anchor="middle" font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="17" font-weight="600" fill="#E8D48B">Cloudflare Worker API</text>
+    <text x="600" y="284" text-anchor="middle" font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="12" fill="#9A93AE">src/index.js router &#183; JWT auth &#183; rate limiting &#183; CORS</text>
+
+    <!-- route chips row 1 -->
+    <g font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="11.5" fill="#C9A84C">
+      <rect x="346" y="300" width="78" height="26" rx="13" fill="#C9A84C" fill-opacity="0.07" stroke="#C9A84C" stroke-opacity="0.35"/>
+      <text x="385" y="317" text-anchor="middle">/auth</text>
+      <rect x="430" y="300" width="78" height="26" rx="13" fill="#C9A84C" fill-opacity="0.07" stroke="#C9A84C" stroke-opacity="0.35"/>
+      <text x="469" y="317" text-anchor="middle">/chat</text>
+      <rect x="514" y="300" width="78" height="26" rx="13" fill="#C9A84C" fill-opacity="0.07" stroke="#C9A84C" stroke-opacity="0.35"/>
+      <text x="553" y="317" text-anchor="middle">/drugs</text>
+      <rect x="598" y="300" width="92" height="26" rx="13" fill="#C9A84C" fill-opacity="0.07" stroke="#C9A84C" stroke-opacity="0.35"/>
+      <text x="644" y="317" text-anchor="middle">/pharmacist</text>
+      <rect x="696" y="300" width="78" height="26" rx="13" fill="#C9A84C" fill-opacity="0.07" stroke="#C9A84C" stroke-opacity="0.35"/>
+      <text x="735" y="317" text-anchor="middle">/tutor</text>
+      <rect x="780" y="300" width="78" height="26" rx="13" fill="#C9A84C" fill-opacity="0.07" stroke="#C9A84C" stroke-opacity="0.35"/>
+      <text x="819" y="317" text-anchor="middle">/vision</text>
+    </g>
+    <!-- route chips row 2 -->
+    <g font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="11.5" fill="#C9A84C">
+      <rect x="346" y="334" width="78" height="26" rx="13" fill="#C9A84C" fill-opacity="0.07" stroke="#C9A84C" stroke-opacity="0.35"/>
+      <text x="385" y="351" text-anchor="middle">/voice</text>
+      <rect x="430" y="334" width="92" height="26" rx="13" fill="#C9A84C" fill-opacity="0.07" stroke="#C9A84C" stroke-opacity="0.35"/>
+      <text x="476" y="351" text-anchor="middle">/reminders</text>
+      <rect x="528" y="334" width="96" height="26" rx="13" fill="#C9A84C" fill-opacity="0.07" stroke="#C9A84C" stroke-opacity="0.35"/>
+      <text x="576" y="351" text-anchor="middle">/pharmacies</text>
+      <rect x="630" y="334" width="82" height="26" rx="13" fill="#C9A84C" fill-opacity="0.07" stroke="#C9A84C" stroke-opacity="0.35"/>
+      <text x="671" y="351" text-anchor="middle">/articles</text>
+      <rect x="718" y="334" width="64" height="26" rx="13" fill="#C9A84C" fill-opacity="0.07" stroke="#C9A84C" stroke-opacity="0.35"/>
+      <text x="750" y="351" text-anchor="middle">/admin</text>
+      <rect x="788" y="334" width="70" height="26" rx="13" fill="#C9A84C" fill-opacity="0.07" stroke="#C9A84C" stroke-opacity="0.35"/>
+      <text x="823" y="351" text-anchor="middle">/analytics</text>
+    </g>
+    <text x="600" y="392" text-anchor="middle" font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="11" fill="#6E6884">PozosBot pipeline: safety filter &#8594; complexity classifier &#8594; drug RAG &#8594; model + fallback</text>
+  </g>
+
+  <!-- ============ WORKERS AI ============ -->
+  <g>
+    <rect x="40" y="230" width="230" height="150" rx="14" fill="url(#cardGreen)" stroke="#1FA36B" stroke-opacity="0.45" stroke-width="1.2"/>
+    <text x="155" y="260" text-anchor="middle" font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="16" font-weight="600" fill="#4CC98F">Workers AI</text>
+    <text x="155" y="286" text-anchor="middle" font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="11.5" fill="#9A93AE">Llama 3.1 8B &#183; primary</text>
+    <text x="155" y="306" text-anchor="middle" font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="11.5" fill="#9A93AE">Mistral 7B &#183; fallback</text>
+    <text x="155" y="326" text-anchor="middle" font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="11.5" fill="#9A93AE">Llama 3.3 70B &#183; complex</text>
+    <text x="155" y="352" text-anchor="middle" font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="11" fill="#6E6884">drug RAG &#183; vision &#183; voice</text>
+  </g>
+
+  <!-- ============ CHATROOM DO ============ -->
+  <g>
+    <rect x="930" y="230" width="230" height="150" rx="14" fill="url(#card)" stroke="#C9A84C" stroke-opacity="0.45" stroke-width="1.2"/>
+    <text x="1045" y="260" text-anchor="middle" font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="16" font-weight="600" fill="#E8D48B">ChatRoom</text>
+    <text x="1045" y="282" text-anchor="middle" font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="11.5" fill="#9A93AE">Durable Object</text>
+    <text x="1045" y="308" text-anchor="middle" font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="11.5" fill="#9A93AE">WebSocket topic rooms</text>
+    <text x="1045" y="328" text-anchor="middle" font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="11.5" fill="#9A93AE">presence &#183; live messaging</text>
+    <text x="1045" y="354" text-anchor="middle" font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="11" fill="#6E6884">pharmacist handoff sessions</text>
+  </g>
+
+  <!-- ============ DATA STORES ============ -->
+  <g>
+    <rect x="200" y="500" width="250" height="100" rx="14" fill="url(#card)" stroke="#C9A84C" stroke-opacity="0.35" stroke-width="1.2"/>
+    <text x="325" y="532" text-anchor="middle" font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="15.5" font-weight="600" fill="#E8D48B">D1 (SQLite)</text>
+    <text x="325" y="556" text-anchor="middle" font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="11.5" fill="#9A93AE">users &#183; drugs &#183; sessions</text>
+    <text x="325" y="576" text-anchor="middle" font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="11.5" fill="#9A93AE">tutor &#183; subscriptions &#183; rooms</text>
+  </g>
+  <g>
+    <rect x="475" y="500" width="250" height="100" rx="14" fill="url(#card)" stroke="#C9A84C" stroke-opacity="0.35" stroke-width="1.2"/>
+    <text x="600" y="532" text-anchor="middle" font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="15.5" font-weight="600" fill="#E8D48B">KV</text>
+    <text x="600" y="556" text-anchor="middle" font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="11.5" fill="#9A93AE">session tokens</text>
+    <text x="600" y="576" text-anchor="middle" font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="11.5" fill="#9A93AE">7-day TTL cache</text>
+  </g>
+  <g>
+    <rect x="750" y="500" width="250" height="100" rx="14" fill="url(#card)" stroke="#C9A84C" stroke-opacity="0.35" stroke-width="1.2"/>
+    <text x="875" y="532" text-anchor="middle" font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="15.5" font-weight="600" fill="#E8D48B">R2 Object Storage</text>
+    <text x="875" y="556" text-anchor="middle" font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="11.5" fill="#9A93AE">license documents</text>
+    <text x="875" y="576" text-anchor="middle" font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="11.5" fill="#9A93AE">prescription uploads</text>
+  </g>
+
+  <!-- ============ EXTERNAL ============ -->
+  <g>
+    <rect x="40" y="500" width="140" height="100" rx="14" fill="url(#card)" stroke="#8E87A0" stroke-opacity="0.35" stroke-width="1.2"/>
+    <text x="110" y="536" text-anchor="middle" font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="14.5" font-weight="600" fill="#C9BFD8">Paystack</text>
+    <text x="110" y="560" text-anchor="middle" font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="11" fill="#9A93AE">tutor plan</text>
+    <text x="110" y="578" text-anchor="middle" font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="11" fill="#9A93AE">subscriptions</text>
+  </g>
+  <g>
+    <rect x="1020" y="500" width="140" height="100" rx="14" fill="url(#card)" stroke="#8E87A0" stroke-opacity="0.35" stroke-width="1.2"/>
+    <text x="1090" y="536" text-anchor="middle" font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="14.5" font-weight="600" fill="#C9BFD8">Email</text>
+    <text x="1090" y="560" text-anchor="middle" font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="11" fill="#9A93AE">verification &amp;</text>
+    <text x="1090" y="578" text-anchor="middle" font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="11" fill="#9A93AE">notifications</text>
+  </g>
+
+  <!-- ============ FLOWS ============ -->
+  <g fill="none" stroke-width="1.6" filter="url(#soft)">
+    <path d="M 600 150 V 226" stroke="#C9A84C" marker-end="url(#arrowGold)"/>
+    <path d="M 800 105 H 1045 V 226" stroke="#C9A84C" marker-end="url(#arrowGold)"/>
+    <path d="M 330 305 H 274" stroke="#1FA36B" marker-end="url(#arrowGreen)"/>
+    <path d="M 470 410 C 420 450 380 460 340 496" stroke="#C9A84C" marker-end="url(#arrowGold)"/>
+    <path d="M 600 410 V 496" stroke="#C9A84C" marker-end="url(#arrowGold)"/>
+    <path d="M 730 410 C 780 450 820 460 860 496" stroke="#C9A84C" marker-end="url(#arrowGold)"/>
+    <path d="M 330 360 C 250 400 160 430 115 496" stroke="#8E87A0" stroke-opacity="0.8" marker-end="url(#arrowGold)"/>
+    <path d="M 870 360 C 950 400 1040 430 1085 496" stroke="#8E87A0" stroke-opacity="0.8" marker-end="url(#arrowGold)"/>
+  </g>
+
+  <!-- flow labels -->
+  <g font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="11" fill="#8E87A0">
+    <text x="614" y="192">HTTPS &#183; /api/*</text>
+    <text x="905" y="98">WSS &#183; /ws/:room</text>
+    <text x="302" y="292" text-anchor="end" fill="#4CC98F">env.AI.run</text>
+    <text x="392" y="462">SQL</text>
+    <text x="612" y="458">get / put</text>
+    <text x="782" y="462">objects</text>
+  </g>
+
+  <text x="600" y="656" text-anchor="middle" font-family="'Outfit', 'Segoe UI', system-ui, sans-serif" font-size="12" fill="#6E6884">Fully serverless on Cloudflare &#8212; no origin servers, scales to zero</text>
+</svg>

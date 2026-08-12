@@ -1,4 +1,5 @@
 name = "pozospharma-worker"
+account_id = "ea2eb3a9813660dfca2a60e594858538"
 main = "src/index.js"
 compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
@@ -35,3 +36,36 @@ class_name = "ChatRoom"
 [[migrations]]
 tag = "v1"
 new_classes = ["ChatRoom"]
+
+[env.staging]
+name = "pozospharma-worker-staging"
+workers_dev = true
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
+APP_NAME = "PozosPharma Staging"
+AI_PRIMARY_MODEL = "@cf/meta/llama-3.1-8b-instruct"
+AI_FALLBACK_MODEL = "@cf/mistral/mistral-7b-instruct-v0.1"
+AI_COMPLEX_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
+CORS_ORIGIN = "https://pozospharma-staging.pages.dev"
+PAYSTACK_PLAN_CODE = ""
+
+[env.staging.ai]
+binding = "AI"
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "pozospharma-db-staging"
+database_id = "6ff87fd7-baf4-40a6-aad8-2eb6bb14eafe"
+
+[[env.staging.kv_namespaces]]
+binding = "KV"
+id = "a6207e120f774eadb31570e624c81c33"
+
+[[env.staging.r2_buckets]]
+binding = "R2"
+bucket_name = "pozospharma-docs-staging"
+
+[[env.staging.durable_objects.bindings]]
+name = "CHAT_ROOM"
+class_name = "ChatRoom"

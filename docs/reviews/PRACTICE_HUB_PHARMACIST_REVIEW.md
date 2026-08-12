@@ -8,6 +8,19 @@
 
 **Decision requested:** Approve for staging UAT, approve with changes, or reject pending redesign
 
+## Approval process
+
+The pharmacist does not approve source code or the production site. The project owner gives the reviewer:
+
+1. The isolated staging URL and the exact Git commit under review.
+2. A synthetic verified-pharmacist account. No real patient or production account may be used.
+3. This review packet and `PRACTICE_HUB_APPROVAL_FORM.docx`.
+4. A contact for reporting defects without placing clinical or patient information in email, chat, or GitHub.
+
+The registered pharmacist completes the staging scenarios, records results in the approval form, supplies their Pharmacy Council registration number, selects one decision, signs, and returns the document to the project owner through the agreed private channel. The project owner records the decision against the commit in the pull request without publishing the reviewer's registration number or signature.
+
+A valid approval record contains the staging URL, commit identifier, reviewer identity and registration number, completed checklist, decision, conditions, signature, and date. **Approve for staging pilot** permits a synthetic-data pilot only. Production requires a separate release decision after all conditions are closed.
+
 ## 1. What the reviewer is approving
 
 The Practice Hub lets a verified pharmacist document a de-identified clinical intervention, view pharmacist-scoped 30-day metrics, retain an offline entry until connectivity returns, and export their records as CSV.

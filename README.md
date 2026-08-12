@@ -111,7 +111,7 @@ Verified pharmacists also have a **PSGH-aligned Practice Hub** for de-identified
 
 ## Getting Started
 
-**Prerequisites:** Node.js 18+, npm, and a Cloudflare account with [Wrangler](https://developers.cloudflare.com/workers/wrangler/) authenticated (`npx wrangler login`).
+**Prerequisites:** Node.js 22.12+, npm, and a Cloudflare account with [Wrangler](https://developers.cloudflare.com/workers/wrangler/) authenticated (`npx wrangler login`).
 
 ### 1. Backend — Cloudflare Worker
 
@@ -134,6 +134,8 @@ Existing environments can apply the Practice Hub migration separately after revi
 npx wrangler d1 execute pozospharma-db --local --file=src/migrations/2026-08-12-practice-hub.sql
 ```
 
+Before remote rollout, complete the [pharmacist review packet](docs/reviews/PRACTICE_HUB_PHARMACIST_REVIEW.md) and follow the [isolated staging runbook](docs/deployment/STAGING_RUNBOOK.md). The checked-in top-level Wrangler configuration points to production resources; do not use it as a staging target.
+
 Set the required secrets:
 
 ```bash
@@ -152,6 +154,8 @@ npm run dev        # vite → http://localhost:3000
 The Vite dev server proxies `/api` and `/ws` to the Worker on `localhost:8787`, so run both.
 
 ### 3. Deploy
+
+The commands below are production deployment commands. Use them only after staging UAT and release approval.
 
 ```bash
 cd worker && npm run deploy                                        # Worker → Cloudflare

@@ -93,11 +93,11 @@ const useChatStore = create(
         return data;
       },
 
-      register: async (username, email, password) => {
+      register: async (username, email, password, extras = {}) => {
         const res = await fetch(`${API_URL}/api/auth/register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, email, password }),
+          body: JSON.stringify({ username, email, password, ...extras }),
         });
 
         if (!res.ok) {
@@ -165,8 +165,8 @@ const useChatStore = create(
                 ? { ...optimisticMsg, status: "sent" }
                 : msg
             );
-            // Add AI response if present
-            if (data.aiMessage) {
+            // Add AI response if present (dedup: skip if WS already delivered it)
+            if (data.aiMessage && !updated.some((m) => m.id === data.aiMessage.id)) {
               updated.push({
                 id: data.aiMessage.id,
                 content: data.aiMessage.content,
@@ -229,7 +229,7 @@ const useChatStore = create(
             const updated = state.messages.map((m) =>
               m.id === messageId ? { ...m, status: 'sent' } : m
             );
-            if (data.aiMessage) {
+            if (data.aiMessage && !updated.some((m) => m.id === data.aiMessage.id)) {
               updated.push({
                 id: data.aiMessage.id,
                 content: data.aiMessage.content,

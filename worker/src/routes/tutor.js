@@ -35,7 +35,8 @@ async function incrementUsage(userId, env) {
   `).bind(id, userId, today).run();
 }
 
-function isPremium(sub) {
+function isPremium(sub, user) {
+  if (user && user.role === 'admin') return true;
   if (!sub || sub.plan === 'free') return false;
   if (sub.status !== 'active') return false;
   if (sub.current_period_end && sub.current_period_end < Math.floor(Date.now() / 1000)) return false;
@@ -49,7 +50,7 @@ export async function handleTutor(request, env, path) {
     if (user instanceof Response) return user;
 
     const sub = await getOrCreateSubscription(user.id, env);
-    const premium = isPremium(sub);
+    const premium = isPremium(sub, user);
 
     if (!premium) {
       const usage = await getDailyUsage(user.id, env);
@@ -146,7 +147,7 @@ export async function handleTutor(request, env, path) {
     if (user instanceof Response) return user;
 
     const sub = await getOrCreateSubscription(user.id, env);
-    const premium = isPremium(sub);
+    const premium = isPremium(sub, user);
     const limit = premium ? 50 : 3;
 
     const convos = await env.DB.prepare(
@@ -191,7 +192,7 @@ export async function handleTutor(request, env, path) {
     if (user instanceof Response) return user;
 
     const sub = await getOrCreateSubscription(user.id, env);
-    const premium = isPremium(sub);
+    const premium = isPremium(sub, user);
     const usage = await getDailyUsage(user.id, env);
 
     return new Response(JSON.stringify({

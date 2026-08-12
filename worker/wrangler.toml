@@ -6,6 +6,9 @@ compatibility_flags = ["nodejs_compat"]
 [vars]
 ENVIRONMENT = "production"
 APP_NAME = "PozosPharma"
+# Virtual clinic / telemedicine is in-progress and not production-ready. Keep "false"
+# until the schema/code is reconciled and the feature is QA'd. See routes/clinic.js.
+CLINIC_ENABLED = "false"
 AI_PRIMARY_MODEL = "@cf/meta/llama-3.1-8b-instruct"
 AI_FALLBACK_MODEL = "@cf/mistral/mistral-7b-instruct-v0.1"
 AI_COMPLEX_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"

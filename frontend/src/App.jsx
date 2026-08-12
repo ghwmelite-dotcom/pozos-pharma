@@ -35,6 +35,8 @@ const CompoundingLab = lazy(() => import("./pages/CompoundingLab"));
 const QuizEngine = lazy(() => import("./pages/QuizEngine"));
 const Flashcards = lazy(() => import("./pages/Flashcards"));
 const AITutor = lazy(() => import("./pages/AITutor"));
+const Clinic = lazy(() => import("./pages/Clinic"));
+const ClinicSession = lazy(() => import("./pages/ClinicSession"));
 
 function LoadingFallback() {
   return (
@@ -286,6 +288,7 @@ function Navbar() {
     }`;
 
   const exploreItems = [
+    { to: "/drugs", label: t("nav.drugs") },
     { to: "/pharmacists", label: "Our Pharmacists" },
     { to: "/pharmacies", label: "Pharmacies" },
     { to: "/health-hub", label: "Health Hub" },
@@ -350,7 +353,6 @@ function Navbar() {
 
           <div className="hidden md:flex items-center gap-0.5">
             <NavLink to="/" end className={navLinkClass}>{t("nav.home")}</NavLink>
-            <NavLink to="/drugs" className={navLinkClass}>{t("nav.drugs")}</NavLink>
             <LearnHub />
             <MoreDropdown items={exploreItems} label="Explore" />
             <MoreDropdown items={toolsItems} label="Tools" />
@@ -375,6 +377,22 @@ function Navbar() {
                 </span>
               </NavLink>
             )}
+            <NavLink
+              to="/clinic"
+              className={({ isActive }) =>
+                `relative flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-body font-semibold transition-all border ${
+                  isActive
+                    ? "bg-[#C9A84C]/15 text-[#C9A84C] border-[#C9A84C]/40 shadow-[0_0_12px_rgba(201,168,76,0.15)] dark:bg-[#C9A84C]/20 dark:text-[#E8D48B]"
+                    : "text-[#C9A84C]/80 border-[#C9A84C]/20 hover:border-[#C9A84C]/40 hover:bg-[#C9A84C]/10 hover:shadow-[0_0_12px_rgba(201,168,76,0.1)] dark:text-[#E8D48B]/80 dark:hover:text-[#E8D48B]"
+                }`
+              }
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" />
+              </svg>
+              Clinic
+              <span className="px-1.5 py-0.5 text-[9px] font-bold bg-[#C9A84C] text-gray-950 rounded-md leading-none animate-pulse">NEW</span>
+            </NavLink>
             {user?.role === "pharmacist" && <NavLink to="/pharmacist-portal" className={navLinkClass}>{t("nav.pharmacist")}</NavLink>}
           </div>
 
@@ -437,7 +455,6 @@ function Navbar() {
           <div className="md:hidden pb-4 border-t border-warm-200 dark:border-gray-800 mt-1">
             <div className="py-2 space-y-0.5">
               <NavLink to="/" end className={mobileNavClass} onClick={() => setMobileOpen(false)}>{t("nav.home")}</NavLink>
-              <NavLink to="/drugs" className={mobileNavClass} onClick={() => setMobileOpen(false)}>{t("nav.drugs")}</NavLink>
               {user && (
                 <NavLink
                   to="/chat/general"
@@ -460,6 +477,25 @@ function Navbar() {
                   </span>
                 </NavLink>
               )}
+              <NavLink
+                to="/clinic"
+                onClick={() => setMobileOpen(false)}
+                className={({ isActive }) =>
+                  `flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-body font-semibold transition-all border ${
+                    isActive
+                      ? "bg-[#C9A84C]/15 text-[#C9A84C] border-[#C9A84C]/40"
+                      : "text-[#C9A84C]/80 border-[#C9A84C]/20 hover:border-[#C9A84C]/40 hover:bg-[#C9A84C]/10"
+                  }`
+                }
+              >
+                <span className="flex items-center gap-2">
+                  <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" />
+                  </svg>
+                  Virtual Clinic
+                </span>
+                <span className="px-1.5 py-0.5 text-[9px] font-bold bg-[#C9A84C] text-gray-950 rounded-md leading-none">NEW</span>
+              </NavLink>
             </div>
             <div className="mx-3 my-2 p-2.5 rounded-xl bg-gradient-to-r from-[#C9A84C]/5 to-[#C9A84C]/10 dark:from-[#C9A84C]/10 dark:to-[#C9A84C]/15 border border-[#C9A84C]/15">
               <p className="px-1 pb-2 text-[10px] font-body font-bold text-[#C9A84C]/70 uppercase tracking-[0.2em] flex items-center gap-1.5">
@@ -483,6 +519,7 @@ function Navbar() {
             <div className="border-t border-warm-200 dark:border-gray-800 my-1.5" />
             <p className="px-3 py-1.5 text-[10px] font-body font-semibold text-[#C9A84C]/60 uppercase tracking-[0.2em]">Explore</p>
             <div className="space-y-0.5">
+              <NavLink to="/drugs" className={mobileNavClass} onClick={() => setMobileOpen(false)}>{t("nav.drugs")}</NavLink>
               <NavLink to="/pharmacists" className={mobileNavClass} onClick={() => setMobileOpen(false)}>Our Pharmacists</NavLink>
               <NavLink to="/pharmacies" className={mobileNavClass} onClick={() => setMobileOpen(false)}>Pharmacies</NavLink>
               <NavLink to="/health-hub" className={mobileNavClass} onClick={() => setMobileOpen(false)}>Health Hub</NavLink>
@@ -569,6 +606,8 @@ export default function App() {
             <Route path="/learn/quiz" element={<QuizEngine />} />
             <Route path="/learn/flashcards" element={<Flashcards />} />
             <Route path="/ai-tutor" element={<AITutor />} />
+            <Route path="/clinic" element={<Clinic />} />
+            <Route path="/clinic/session/:sessionId" element={<ClinicSession />} />
             <Route path="/verify-email/:token" element={<VerifyEmail />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
           </Routes>

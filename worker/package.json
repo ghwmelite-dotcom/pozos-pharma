@@ -6,7 +6,11 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "db:init": "wrangler d1 execute pozospharma-db --file=../schema.sql"
+    "db:init": "wrangler d1 execute pozospharma-db --file=../schema.sql",
+    "db:migrate:provenance": "wrangler d1 execute pozospharma-db --file=src/migrations/2026-07-drug-provenance.sql",
+    "db:seed:drugs": "wrangler d1 execute pozospharma-db --file=../drugs-seed.sql",
+    "db:seed:drugs-extended": "wrangler d1 execute pozospharma-db --file=../drugs-seed-extended.sql",
+    "db:seed:herbs": "wrangler d1 execute pozospharma-db --file=../herbs-seed.sql"
   },
   "devDependencies": {
     "wrangler": "^3.0.0"

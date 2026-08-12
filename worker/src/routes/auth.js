@@ -10,6 +10,9 @@ async function ensureSchema(env) {
     { name: 'verification_token', sql: 'ALTER TABLE users ADD COLUMN verification_token TEXT' },
     { name: 'reset_token', sql: 'ALTER TABLE users ADD COLUMN reset_token TEXT' },
     { name: 'reset_token_expires', sql: 'ALTER TABLE users ADD COLUMN reset_token_expires INTEGER' },
+    { name: 'account_type', sql: "ALTER TABLE users ADD COLUMN account_type TEXT DEFAULT 'general_public'" },
+    { name: 'university', sql: 'ALTER TABLE users ADD COLUMN university TEXT' },
+    { name: 'year_of_study', sql: 'ALTER TABLE users ADD COLUMN year_of_study TEXT' },
   ];
   for (const col of columns) {
     try {
@@ -43,7 +46,14 @@ export async function handleAuth(request, env, path) {
 }
 
 async function register(request, env) {
-  const { username, email, password } = await request.json();
+  const {
+    username, email, password,
+    accountType = 'general_public',
+    // Student fields
+    university, yearOfStudy,
+    // Pharmacist fields
+    fullName, licenseNumber, specialization, bio
+  } = await request.json();
 
   if (!username || !email || !password) {
     return json({ error: 'Username, email, and password are required' }, 400);
@@ -53,6 +63,18 @@ async function register(request, env) {
   }
   if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
     return json({ error: 'Username must be 3-20 alphanumeric characters' }, 400);
+  }
+
+  const validTypes = ['general_public', 'pharmacy_student', 'pharmacist'];
+  if (!validTypes.includes(accountType)) {
+    return json({ error: 'Invalid account type' }, 400);
+  }
+
+  // Pharmacist-specific validation
+  if (accountType === 'pharmacist') {
+    if (!fullName || !licenseNumber) {
+      return json({ error: 'Full name and license number are required for pharmacist registration' }, 400);
+    }
   }
 
   // Check existing
@@ -67,14 +89,29 @@ async function register(request, env) {
   const id = crypto.randomUUID();
   const passwordHash = await hashPassword(password);
 
-  await env.DB.prepare(
-    'INSERT INTO users (id, username, email, password_hash, email_verified) VALUES (?, ?, ?, ?, 1)'
-  ).bind(id, username, email, passwordHash).run();
+  // Set role: pharmacist applicants start as 'user' until admin approves
+  const role = 'user';
 
-  const token = await signJWT({ userId: id, username, role: 'user' }, env.JWT_SECRET);
+  await env.DB.prepare(
+    'INSERT INTO users (id, username, email, password_hash, email_verified, account_type, university, year_of_study) VALUES (?, ?, ?, ?, 1, ?, ?, ?)'
+  ).bind(id, username, email, passwordHash, accountType, university || null, yearOfStudy || null).run();
+
+  // If pharmacist, create pending pharmacist record
+  if (accountType === 'pharmacist') {
+    const pharmId = crypto.randomUUID();
+    await env.DB.prepare(
+      'INSERT INTO pharmacists (id, user_id, full_name, license_number, specialization, bio, is_verified) VALUES (?, ?, ?, ?, ?, ?, 0)'
+    ).bind(pharmId, id, fullName, licenseNumber, specialization || null, bio || null).run();
+  }
+
+  const token = await signJWT({ userId: id, username, role }, env.JWT_SECRET);
   await env.KV.put(`session:${id}`, token, { expirationTtl: 7 * 24 * 3600 });
 
-  return json({ token, user: { id, username, email, role: 'user', email_verified: 1 } });
+  return json({
+    token,
+    user: { id, username, email, role, email_verified: 1, account_type: accountType },
+    pendingApproval: accountType === 'pharmacist'
+  });
 }
 
 async function login(request, env) {
@@ -85,7 +122,7 @@ async function login(request, env) {
   }
 
   const user = await env.DB.prepare(
-    'SELECT id, username, email, password_hash, role, is_banned, email_verified FROM users WHERE email = ?'
+    'SELECT id, username, email, password_hash, role, is_banned, email_verified, account_type FROM users WHERE email = ?'
   ).bind(email).first();
 
   if (!user) {
@@ -114,6 +151,7 @@ async function login(request, env) {
       email: user.email,
       role: user.role,
       email_verified: user.email_verified ?? 0,
+      account_type: user.account_type || 'general_public',
     }
   });
 }
@@ -124,7 +162,7 @@ async function getMe(request, env) {
   if (!payload) return json({ error: 'Unauthorized' }, 401);
 
   const user = await env.DB.prepare(
-    'SELECT id, username, email, role, avatar_url, created_at, email_verified FROM users WHERE id = ?'
+    'SELECT id, username, email, role, avatar_url, created_at, email_verified, account_type, university, year_of_study FROM users WHERE id = ?'
   ).bind(payload.userId).first();
 
   if (!user) return json({ error: 'User not found' }, 404);

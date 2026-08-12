@@ -144,8 +144,8 @@ async function sendMessage(request, env) {
   ).bind(session.id).all();
   const sessionHistory = (history.results || []).reverse();
 
-  // Call PozosBot AI
-  const aiResponse = await getPozosResponse(content, sessionHistory, env, { language: language || 'en' });
+  // Call PozosBot AI with room context
+  const aiResponse = await getPozosResponse(content, sessionHistory, env, { language: language || 'en', roomSlug: roomId || 'general' });
 
   // Save AI response
   const aiMsgId = crypto.randomUUID();

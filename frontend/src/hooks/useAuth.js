@@ -37,8 +37,8 @@ export default function useAuth() {
   );
 
   const register = useCallback(
-    async (username, email, password) => {
-      return storeRegister(username, email, password);
+    async (username, email, password, extras = {}) => {
+      return storeRegister(username, email, password, extras);
     },
     [storeRegister]
   );

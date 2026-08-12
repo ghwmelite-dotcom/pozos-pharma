@@ -35,6 +35,7 @@ const CompoundingLab = lazy(() => import("./pages/CompoundingLab"));
 const QuizEngine = lazy(() => import("./pages/QuizEngine"));
 const Flashcards = lazy(() => import("./pages/Flashcards"));
 const AITutor = lazy(() => import("./pages/AITutor"));
+const PracticeHub = lazy(() => import("./pages/PracticeHub"));
 
 function LoadingFallback() {
   return (
@@ -375,6 +376,7 @@ function Navbar() {
                 </span>
               </NavLink>
             )}
+            {user?.role === "pharmacist" && <NavLink to="/practice" className={navLinkClass}>Practice Hub</NavLink>}
             {user?.role === "pharmacist" && <NavLink to="/pharmacist-portal" className={navLinkClass}>{t("nav.pharmacist")}</NavLink>}
           </div>
 
@@ -504,6 +506,7 @@ function Navbar() {
             {user?.role === "pharmacist" && (
               <>
                 <div className="border-t border-warm-200 dark:border-gray-800 my-1.5" />
+                <NavLink to="/practice" className={mobileNavClass} onClick={() => setMobileOpen(false)}>Practice Hub</NavLink>
                 <NavLink to="/pharmacist-portal" className={mobileNavClass} onClick={() => setMobileOpen(false)}>{t("nav.pharmacist")}</NavLink>
               </>
             )}
@@ -545,6 +548,7 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/chat/:roomSlug" element={<ChatRoom />} />
             <Route path="/pharmacist-portal" element={<PharmacistPortal />} />
+            <Route path="/practice" element={<PracticeHub />} />
             <Route path="/drugs" element={<DrugDatabase />} />
             <Route path="/pharmacies" element={<PharmacyLocator />} />
             <Route path="/interactions" element={<InteractionChecker />} />

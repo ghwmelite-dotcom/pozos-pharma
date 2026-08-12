@@ -186,3 +186,49 @@ CREATE INDEX IF NOT EXISTS idx_tutor_msg_conv ON tutor_messages(conversation_id)
 CREATE INDEX IF NOT EXISTS idx_tutor_msg_created ON tutor_messages(created_at);
 CREATE INDEX IF NOT EXISTS idx_tutor_sub_user ON tutor_subscriptions(user_id);
 CREATE INDEX IF NOT EXISTS idx_tutor_usage_user_date ON tutor_usage(user_id, date);
+
+-- PSGH-aligned, de-identified pharmacy intervention documentation.
+-- Never store patient names, phone numbers, addresses, or NHIS identifiers here.
+CREATE TABLE IF NOT EXISTS clinical_interventions (
+  id TEXT PRIMARY KEY,
+  pharmacist_id TEXT NOT NULL REFERENCES pharmacists(id),
+  recorded_by_user_id TEXT NOT NULL REFERENCES users(id),
+  client_request_id TEXT,
+  reference_code TEXT NOT NULL UNIQUE,
+  condition_category TEXT NOT NULL,
+  drug_names TEXT NOT NULL,
+  issue_type TEXT NOT NULL,
+  severity TEXT NOT NULL,
+  action_taken TEXT NOT NULL,
+  outcome TEXT NOT NULL,
+  reportable INTEGER NOT NULL DEFAULT 0,
+  notes TEXT,
+  occurred_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  updated_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  UNIQUE(pharmacist_id, client_request_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_interventions_pharmacist_occurred
+  ON clinical_interventions(pharmacist_id, occurred_at DESC);
+CREATE INDEX IF NOT EXISTS idx_interventions_pharmacist_condition
+  ON clinical_interventions(pharmacist_id, condition_category, occurred_at DESC);
+CREATE INDEX IF NOT EXISTS idx_interventions_pharmacist_reportable
+  ON clinical_interventions(pharmacist_id, reportable, occurred_at DESC);
+
+-- Privacy-conscious product analytics. Event payloads must not contain PII.
+CREATE TABLE IF NOT EXISTS analytics_events (
+  id TEXT PRIMARY KEY,
+  event_type TEXT NOT NULL,
+  event_data TEXT,
+  user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
+  page TEXT,
+  created_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+CREATE INDEX IF NOT EXISTS idx_analytics_events_created
+  ON analytics_events(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_analytics_events_type_created
+  ON analytics_events(event_type, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_analytics_events_user_created
+  ON analytics_events(user_id, created_at DESC);

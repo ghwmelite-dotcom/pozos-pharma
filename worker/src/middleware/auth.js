@@ -84,10 +84,21 @@ export async function requireRole(request, env, role) {
   if (!user) {
     return { error: new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } }) };
   }
-  if (user.role !== role && user.role !== 'admin') {
+
+  // JWT claims can outlive role changes. Re-read authoritative account state for
+  // every privileged request so approvals, suspensions, and demotions apply now.
+  const account = await env.DB.prepare(
+    'SELECT role, is_banned FROM users WHERE id = ?'
+  ).bind(user.userId).first();
+  if (!account || account.is_banned) {
     return { error: new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: { 'Content-Type': 'application/json' } }) };
   }
-  return { user };
+
+  const currentUser = { ...user, role: account.role };
+  if (currentUser.role !== role && currentUser.role !== 'admin') {
+    return { error: new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: { 'Content-Type': 'application/json' } }) };
+  }
+  return { user: currentUser };
 }
 
 // Simple password hashing using SHA-256 + salt (D1 doesn't support bcrypt natively)

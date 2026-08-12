@@ -88,13 +88,8 @@ async function verifyPharmacist(request, env) {
   const { pharmacistId, approved } = await request.json();
   if (!pharmacistId) return json({ error: 'pharmacistId required' }, 400);
 
-  if (approved) {
-    await env.DB.prepare(
-      'UPDATE pharmacists SET is_verified = 1, verified_at = unixepoch() WHERE id = ?'
-    ).bind(pharmacistId).run();
-  } else {
-    await env.DB.prepare('DELETE FROM pharmacists WHERE id = ?').bind(pharmacistId).run();
-  }
+  const updated = await setPharmacistVerification(env, pharmacistId, !!approved);
+  if (!updated) return json({ error: 'Pharmacist application not found' }, 404);
 
   return json({ success: true, verified: !!approved });
 }
@@ -103,15 +98,39 @@ async function verifyPharmacistRESTful(request, env, pharmacistId, action) {
   const { user, error } = await requireRole(request, env, 'admin');
   if (error) return error;
 
-  if (action === 'approve') {
-    await env.DB.prepare(
-      'UPDATE pharmacists SET is_verified = 1, verified_at = unixepoch() WHERE id = ?'
-    ).bind(pharmacistId).run();
-  } else {
-    await env.DB.prepare('DELETE FROM pharmacists WHERE id = ?').bind(pharmacistId).run();
-  }
+  const updated = await setPharmacistVerification(env, pharmacistId, action === 'approve');
+  if (!updated) return json({ error: 'Pharmacist application not found' }, 404);
 
   return json({ success: true, action });
+}
+
+async function setPharmacistVerification(env, pharmacistId, approved) {
+  const application = await env.DB.prepare(
+    'SELECT user_id FROM pharmacists WHERE id = ?'
+  ).bind(pharmacistId).first();
+  if (!application) return false;
+
+  if (approved) {
+    await env.DB.batch([
+      env.DB.prepare(
+        'UPDATE pharmacists SET is_verified = 1, verified_at = unixepoch() WHERE id = ?'
+      ).bind(pharmacistId),
+      env.DB.prepare("UPDATE users SET role = 'pharmacist' WHERE id = ?").bind(application.user_id),
+    ]);
+  } else {
+    await env.DB.batch([
+      env.DB.prepare('DELETE FROM pharmacists WHERE id = ?').bind(pharmacistId),
+      env.DB.prepare(
+        `UPDATE users SET role = 'user'
+         WHERE id = ?
+           AND NOT EXISTS (
+             SELECT 1 FROM pharmacists WHERE user_id = ? AND is_verified = 1
+           )`
+      ).bind(application.user_id, application.user_id),
+    ]);
+  }
+
+  return true;
 }
 
 async function getFlaggedMessages(request, env) {

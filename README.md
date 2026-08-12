@@ -81,6 +81,8 @@ Everything runs **fully serverless on Cloudflare** — no origin servers, scalin
 
 Plus: nine moderated **community topic rooms** (chronic conditions, pediatrics, women's health, herbal &amp; traditional, oncology and more) with live chat, voice input and voice consultations, a health-hub article library, multilingual UI scaffolding (i18n), and an admin panel with analytics.
 
+Verified pharmacists also have a **PSGH-aligned Practice Hub** for de-identified clinical intervention documentation. It provides 30-day safety and condition-category metrics, idempotent offline capture for unstable connections, pharmacist-scoped CSV exports, and direct access to clinical safety tools. It is an alignment workspace, not an official PSGH, NHIA, FDA, or Pharmacy Council submission portal.
+
 ## Architecture
 
 <p align="center">
@@ -109,7 +111,7 @@ Plus: nine moderated **community topic rooms** (chronic conditions, pediatrics, 
 
 ## Getting Started
 
-**Prerequisites:** Node.js 18+, npm, and a Cloudflare account with [Wrangler](https://developers.cloudflare.com/workers/wrangler/) authenticated (`npx wrangler login`).
+**Prerequisites:** Node.js 22.12+, npm, and a Cloudflare account with [Wrangler](https://developers.cloudflare.com/workers/wrangler/) authenticated (`npx wrangler login`).
 
 ### 1. Backend — Cloudflare Worker
 
@@ -125,6 +127,14 @@ Initialize the D1 database (run once):
 npm run db:init                              # remote database (as configured)
 npx wrangler d1 execute pozospharma-db --local --file=../schema.sql   # local dev database
 ```
+
+Existing environments can apply the Practice Hub migration separately after review:
+
+```bash
+npx wrangler d1 execute pozospharma-db --local --file=src/migrations/2026-08-12-practice-hub.sql
+```
+
+Before remote rollout, complete the [pharmacist review packet](docs/reviews/PRACTICE_HUB_PHARMACIST_REVIEW.md) and follow the [isolated staging runbook](docs/deployment/STAGING_RUNBOOK.md). The checked-in top-level Wrangler configuration points to production resources; do not use it as a staging target.
 
 Set the required secrets:
 
@@ -144,6 +154,8 @@ npm run dev        # vite → http://localhost:3000
 The Vite dev server proxies `/api` and `/ws` to the Worker on `localhost:8787`, so run both.
 
 ### 3. Deploy
+
+The commands below are production deployment commands. Use them only after staging UAT and release approval.
 
 ```bash
 cd worker && npm run deploy                                        # Worker → Cloudflare
@@ -187,6 +199,9 @@ pozos-pharma/
 - [ ] Grow the learning academy course catalogue
 - [ ] Deepen multilingual support (i18n scaffolding is in place)
 - [ ] Native mobile wrappers for the PWA
+- [x] PSGH-aligned, de-identified clinical intervention logging and impact metrics
+- [ ] FEFO inventory and expiry forecasting for pharmacist-owned practices
+- [ ] Consultation-fee and NHIS-ready professional-service records
 
 ## Contributing
 

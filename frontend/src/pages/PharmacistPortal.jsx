@@ -20,7 +20,7 @@ const SPECIALIZATIONS = [
 ];
 
 export default function PharmacistPortal() {
-  const { user, token, isPharmacist, isAuthenticated } = useAuth();
+  const { token, isAuthenticated } = useAuth();
 
   const [pharmacistStatus, setPharmacistStatus] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -45,12 +45,6 @@ export default function PharmacistPortal() {
       return;
     }
 
-    if (isPharmacist) {
-      setPharmacistStatus("verified");
-      setLoading(false);
-      return;
-    }
-
     const checkStatus = async () => {
       try {
         const res = await fetch(`${API_URL}/api/pharmacist/status`, { headers });
@@ -68,7 +62,7 @@ export default function PharmacistPortal() {
     };
 
     checkStatus();
-  }, [isAuthenticated, isPharmacist, token]);
+  }, [isAuthenticated, token]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -108,7 +102,7 @@ export default function PharmacistPortal() {
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({ detail: "Registration failed" }));
-        throw new Error(err.detail || "Registration failed");
+        throw new Error(err.error || err.detail || "Registration failed");
       }
 
       setPharmacistStatus("pending");

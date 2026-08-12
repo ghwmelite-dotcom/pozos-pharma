@@ -39,7 +39,7 @@ async function trackEvent(request, env) {
   let userId = null;
   const user = await authMiddleware(request, env);
   if (user) {
-    userId = user.sub || user.id || null;
+    userId = user.userId || user.sub || user.id || null;
   }
 
   const id = crypto.randomUUID();

@@ -45,15 +45,26 @@ async function registerPharmacist(request, env) {
   if (!user) return json({ error: 'Unauthorized' }, 401);
 
   const formData = await request.formData();
-  const fullName = formData.get('fullName');
-  const licenseNumber = formData.get('licenseNumber');
+  const fullName = formData.get('fullName') || formData.get('full_name');
+  const licenseNumber = formData.get('licenseNumber') || formData.get('license_number');
   const country = formData.get('country') || 'Ghana';
   const specialization = formData.get('specialization') || '';
   const bio = formData.get('bio') || '';
-  const licenseDoc = formData.get('licenseDoc');
+  const licenseDoc = formData.get('licenseDoc') || formData.get('license_document');
 
   if (!fullName || !licenseNumber) {
     return json({ error: 'Full name and license number are required' }, 400);
+  }
+
+  const existingApplication = await env.DB.prepare(
+    'SELECT id, is_verified FROM pharmacists WHERE user_id = ?'
+  ).bind(user.userId).first();
+  if (existingApplication) {
+    return json({
+      error: existingApplication.is_verified
+        ? 'This account is already a verified pharmacist'
+        : 'A pharmacist application is already pending for this account'
+    }, 409);
   }
 
   // Upload license document to R2
@@ -73,9 +84,6 @@ async function registerPharmacist(request, env) {
     `INSERT INTO pharmacists (id, user_id, full_name, license_number, country, specialization, bio, license_doc_key)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
   ).bind(id, user.userId, fullName, licenseNumber, country, specialization, bio, licenseDocKey).run();
-
-  // Update user role
-  await env.DB.prepare('UPDATE users SET role = ? WHERE id = ?').bind('pharmacist', user.userId).run();
 
   return json({ id, message: 'Registration submitted. Pending verification by admin.' });
 }
